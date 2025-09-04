@@ -96,9 +96,9 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         firstPage.drawText(`${boleta}`, { x: 178, y: height - 225, size: 12 });
         firstPage.drawText(`${carrera}`, { x: 188, y: height - 245, size: 12 });
         firstPage.drawText(`${grupo}`, { x: 178, y: height - 267, size: 12 });
-        firstPage.drawText(`${supervisor}`, { x: 90, y: height - 390, size: 12 });
-        firstPage.drawText(`${nombre}`, { x: 100, y: height - 220, size: 12 });      // segunda vez nombre
-        firstPage.drawText(`${supervisor}`, { x: 100, y: height - 240, size: 12 }); // segunda vez supervisor
+        firstPage.drawText(`${supervisor}`, { x: 90, y: height - 394, size: 12 });
+        firstPage.drawText(`${nombre}`, { x: 80, y: height - 750, size: 12 });      // segunda vez nombre
+        firstPage.drawText(`${supervisor}`, { x: 355, y: height - 750, size: 12 }); // segunda vez supervisor
 
         // Bloquear la edición aplanando el formulario (fusiona los campos interactivos si existen)
         try {
