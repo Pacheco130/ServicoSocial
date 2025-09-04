@@ -1,0 +1,139 @@
+body {
+    background: url('/img/Fondo.png') no-repeat center center;
+    background-size: cover;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 20px;
+    color: #444;
+}
+
+h1 {
+    text-align: center;
+    color: #742844;
+    font-size: 2em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px #fff, 0 0 20px #74284488; /* resplandor blanco y color IPN */
+}
+
+form {
+    max-width: 600px; /* Aumentamos ligeramente el ancho para aprovechar el espacio horizontal */
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    gap: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+input, textarea, button, select {
+    width: 90%;
+    max-width: 250px;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: border-color 0.3s;
+}
+
+input:focus, textarea:focus, select:focus {
+    border-color: #bbb;
+    outline: none;
+}
+
+button {
+    background-color: #742844; /* se usa el mismo color que el título */
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-weight: bold;
+    transition: background-color 0.3s;
+    padding: 3px 5px;  /* Reducido */
+    font-size: 0.8em;   /* Fuente más pequeña */
+}
+
+button:hover {
+    background-color: #5e1f36; /* hover con una tonalidad más oscura */
+    transform: scale(1.05); /* pequeño efecto de zoom */
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+/* Hacemos que las etiquetas ocupen ambas columnas */
+form label {
+    grid-column: span 2;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #555;
+}
+
+/* Por defecto, los inputs ocuparán ambas columnas, pero se puede ajustar */
+form input, form textarea {
+    grid-column: span 1; /* se reduce de span 2 a span 1 para permitir dos entradas por fila */
+    padding: 10px;
+    font-size: 1em;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    transition: border-color 0.3s;
+}
+
+/* Opcional: si deseas colocar ciertos campos uno al lado del otro, asigna a esos inputs una clase o usa selectores específicos */
+/* Ejemplo: para campos de fechas, se pueden hacer en dos columnas separadas */
+#periodoInicio, #periodoFin {
+    grid-column: span 1;
+}
+
+/* Nuevas reglas para el contenedor de fechas */
+form .periodo-group {
+    grid-column: span 2;
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+}
+
+form .periodo-group > div {
+    flex: 1;
+}
+
+/* Opcional: Ajustar los inputs dentro del grupo para que sean más compactos */
+form .periodo-group input {
+    width: 100%;
+    padding: 8px;
+    font-size: 0.95em;
+}
+
+header {
+    position: relative;
+    height: 80px;  /* Ajusta según el tamaño de las imágenes */
+}
+
+.corner-image {
+    position: absolute;
+    top: 10px;
+    height: 150px;
+    filter: drop-shadow(0 0 12px #fff) drop-shadow(0 0 8px #74284488); /* resplandor blanco y color IPN */
+}
+
+.corner-image.left {
+    left: 10px;
+}
+
+.corner-image.right {
+    right: 10px;
+}
+
+@media (max-width: 640px) {
+    form {
+        margin: 10px;
+        padding: 20px;
+    }
+}

@@ -1,0 +1,77 @@
+body {
+    background: url('/img/Fondo.png') no-repeat center center fixed;
+    background-size: cover;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #444;
+}
+
+/* Menú flotante centrado y con mejor proporción */
+nav {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(255,255,255,0.92);
+    padding: 32px 32px 24px 32px;
+    border-radius: 18px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    z-index: 1000;
+    min-width: 340px;
+    max-width: 400px;
+    width: 90vw;
+}
+
+nav ul {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    justify-content: center;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    width: 100%;
+    text-align: center;
+}
+
+nav ul li a {
+    display: inline-block;
+    width: 80%;
+    background: #742844;
+    color: #fff;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 1.1em;
+    font-family: 'Roboto', sans-serif;
+    padding: 14px 0;
+    border-radius: 24px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.13);
+    text-transform: uppercase;
+    transition: transform 0.2s, box-shadow 0.2s, background 0.2s;
+}
+
+nav ul li a:hover,
+nav ul li a:focus {
+    transform: translateY(-2px) scale(1.04);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.22);
+    background: #5e203f;
+}
+
+nav ul li:last-child {
+    margin-bottom: 0;
+}
+
+header h1 {
+    text-align: center;
+    margin: 32px auto 24px auto;
+    color: #742844;
+    font-family: 'Roboto', sans-serif;
+    font-size: 2em;
+    letter-spacing: 1px;
+}
+

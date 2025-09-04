@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>IPN - CONTROL DE ASISTENCIA</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body> 
+    <header>
+        <h1>CONTROL DE ASISTENCIA</h1>
+        <img src="/img/CECyt19.png" alt="Logo Izquierdo" class="corner-image left">
+        <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
+    </header>
+    <form id="pdfForm" method="POST" action="/generate-pdf">
+        <div class="form-group">
+            <label for="reporteNo">Correspondiente al reporte mensual de actividades No.:</label>
+            <select id="reporteNo" name="reporteNo" required>
+                <option value="">Seleccione...</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6">6</option>
+                <option value="7">7</option>
+            </select>
+        </div>
+        
+        <div class="form-group periodo-group">
+            <div>
+                <label for="periodoInicio">Periodo del:</label>
+                <input type="date" id="periodoInicio" name="periodoInicio" required>
+            </div>
+            <div>
+                <label for="periodoFin">Al:</label>
+                <input type="date" id="periodoFin" name="periodoFin" required>
+            </div>
+        </div>
+        
+        <div class="form-group">
+            <label for="registro">No. de Registro:</label>
+            <input type="text" id="registro" name="registro" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="boleta">Boleta:</label>
+            <input type="text" id="boleta" name="boleta" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="nombre">Nombre del Prestador:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="unidadAcademica">Unidad Académica:</label>
+            <input type="text" id="unidadAcademica" name="unidadAcademica" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="carrera">Carrera:</label>
+            <select id="carrera" name="carrera" required>
+                <option value="">Seleccione...</option>
+                <option value="Tecnico en Aeronáutica">Técnico en Aeronáutica</option>
+                <option value="Tecnico en Alimentos">Técnico en Alimentos</option>
+                <option value="Tecnico en Construccion">Técnico en Construcción</option>
+            </select>
+        </div>
+        
+        <div class="form-group">
+            <label for="responsableNombre">Nombre del Responsable:</label>
+            <input type="text" id="responsableNombre" name="responsableNombre" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="responsableCargo">Cargo del Responsable:</label>
+            <input type="text" id="responsableCargo" name="responsableCargo" required>
+        </div>
+        
+        <button type="submit">Descargar</button>
+    </form>
+    <script src="script.js"></script>
+</body>
+</html>

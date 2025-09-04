@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Carta de Aceptación - IPN</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Carta de Aceptación</h1>
+        <img src="/img/CECyt19.png" alt="Logo Izquierdo" class="corner-image left">
+        <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
+    </header>
+    <form id="aceptacionForm" method="POST" action="/generate-carta-aceptacion">
+        <div class="form-group">
+            <label for="nombre">Nombre:</label>
+            <input type="text" id="nombre" name="nombre" required>
+        </div>
+        <div class="form-group">
+            <label for="boleta">Boleta:</label>
+            <input type="text" id="boleta" name="boleta" required>
+        </div>
+        <div class="form-group">
+            <label for="carrera">Carrera:</label>
+            <select id="carrera" name="carrera" required>
+                <option value="">Seleccione...</option>
+                <option value="Tecnico en Aeronáutica">Técnico en Aeronáutica</option>
+                <option value="Tecnico en Alimentos">Técnico en Alimentos</option>
+                <option value="Tecnico en Construccion">Técnico en Construcción</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="grupo">Grupo:</label>
+            <input type="text" id="grupo" name="grupo" required>
+        </div>
+        <div class="form-group">
+            <label for="supervisor">Supervisor:</label>
+            <input type="text" id="supervisor" name="supervisor" required>
+        </div>
+        <button type="submit">Descargar Carta</button>
+    </form>
+    <script src="script.js"></script>
+</body>
+</html>
