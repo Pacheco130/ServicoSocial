@@ -46,16 +46,12 @@ app.post('/generate-pdf', async (req, res) => {
         const pdfDoc = await PDFDocument.load(templateBytes);
         const firstPage = pdfDoc.getPages()[0];
         const { width, height } = firstPage.getSize();
-        
-        // Para centrar "reporteNo" y desplazarlo un poco a la izquierda
         const fontSize = 10;
         const font = await pdfDoc.embedFont('Helvetica');
         const textWidth = font.widthOfTextAtSize(reporteNo, fontSize);
         const centerX = (width - textWidth) / 2;
         const newX = centerX - 10;
         firstPage.drawText(`${reporteNo}`, { x: newX, y: height - 100, size: fontSize, font: font });
-        
-        // Dibujar "Periodo" usando las fechas formateadas
         firstPage.drawText(`${formattedPeriodoInicio}`, { x: 100, y: height - 118, size: 10 });
         firstPage.drawText(`${formattedPeriodoFin}`, { x: 250, y: height - 118, size: 10 });
         firstPage.drawText(`${registro}`, { x: 515, y: height - 118, size: 10 });
