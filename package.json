@@ -13,6 +13,7 @@
   "dependencies": {
     "body-parser": "^2.2.0",
     "express": "^5.1.0",
+    "fontkit": "^2.0.4",
     "pdf-lib": "^1.17.1"
   }
 }

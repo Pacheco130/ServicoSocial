@@ -2,11 +2,12 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const { PDFDocument, rgb } = require('pdf-lib');
+const bodyParser = require('body-parser');
 
 const app = express();
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-
+app.use(bodyParser.urlencoded({ extended: true }));
 
 // Mueve la ruta raíz antes del middleware estático para que se sirva menu.html al entrar a localhost
 app.get('/', function(req, res) {
@@ -118,6 +119,157 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         console.error('Error generando carta de aceptación:', error);
         res.status(500).send('Error generando carta de aceptación');
     }
+});
+
+app.post('/generate-reporte-mensual', async (req, res) => {
+    // Leer la plantilla PDF desde la raíz del proyecto
+    const pdfPath = path.join(__dirname, 'reporte-mensual.pdf');
+    const pdfBytes = fs.readFileSync(pdfPath);
+    const pdfDoc = await PDFDocument.load(pdfBytes);
+
+    // Registrar fontkit para fuentes personalizadas
+    const fontkit = require('fontkit');
+    pdfDoc.registerFontkit(fontkit);
+
+    // Montserrat Variable para textos normales
+    const montserratFontBytes = fs.readFileSync(path.join(__dirname, 'Montserrat-VariableFont_wght.ttf'));
+    const montserratFont = await pdfDoc.embedFont(montserratFontBytes);
+
+    // Montserrat Bold para textos en negritas
+    const montserratBoldBytes = fs.readFileSync(path.join(__dirname, 'Montserrat-Bold.ttf'));
+    const montserratBold = await pdfDoc.embedFont(montserratBoldBytes);
+
+    // Montserrat Light para la fecha
+    const montserratLightBytes = fs.readFileSync(path.join(__dirname, 'Montserrat-Light.otf'));
+    const montserratLight = await pdfDoc.embedFont(montserratLightBytes);
+
+    // Montserrat Regular para la fecha
+    const montserratRegularBytes = fs.readFileSync(path.join(__dirname, 'Montserrat-Regular.ttf'));
+    const montserratRegular = await pdfDoc.embedFont(montserratRegularBytes);
+
+    // Times New Roman para el nombre y periodo
+    const timesFontBytes = fs.readFileSync(path.join(__dirname, 'Times-New-Roman.ttf'));
+    const timesFont = await pdfDoc.embedFont(timesFontBytes);
+
+    // Función para convertir fecha a formato completo en español
+    function fechaCompleta(fechaISO) {
+        const meses = [
+            'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+            'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+        ];
+        const [anio, mes, dia] = fechaISO.split('-');
+        if (!anio || !mes || !dia) return fechaISO;
+        return `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
+    }
+
+    const page = pdfDoc.getPages()[0];
+    // N. Reporte con Montserrat Bold, tamaño 14
+    page.drawText(`${req.body.nreporte}`, {
+        x: 385,
+        y: 670,
+        size: 14,
+        font: montserratBold,
+        color: rgb(0, 0, 0)
+    });
+    // Fecha en formato completo, Montserrat Light, tamaño 11
+    page.drawText(`${fechaCompleta(req.body.fecha)}`, {
+        x: 346,
+        y: 696,
+        size: 11,
+        font: montserratLight,
+        color: rgb(0, 0, 0)
+    });
+    // Periodo con formato solicitado, Times New Roman, tamaño 12 y fechas completas
+    const periodoTexto = `${fechaCompleta(req.body.periodoInicio)} al ${fechaCompleta(req.body.periodoFin)}`;
+    page.drawText(periodoTexto, {
+        x: 210,
+        y: 639,
+        size: 12,
+        font: timesFont,
+        color: rgb(0, 0, 0)
+    });
+    page.drawText(`${req.body.nombreA}`, {
+        x: 100,
+        y: 591,
+        size: 10,
+        font: timesFont,
+        color: rgb(0, 0, 0)
+    });
+    page.drawText(`${req.body.boleta}`, { 
+        x: 92, 
+        y: 573, 
+        size: 10, 
+        font: timesFont, 
+        color: rgb(0, 0, 0)
+    });
+    page.drawText(`${req.body.semestre}`, { 
+        x: 103, 
+        y: 554,
+        size: 10, 
+        font: timesFont, 
+        color: rgb(0, 0, 0) 
+    });
+    page.drawText(`${req.body.telefono}`, { 
+        x: 143, 
+        y: 535.5,
+        size: 10, 
+        font: timesFont, 
+        color: rgb(0, 0, 0)
+    });
+
+    page.drawText(`${req.body.prestatario}`, { 
+        x: 110, 
+        y: 517.2,
+        size: 10,
+        font: timesFont,
+        color: rgb(0, 0, 0)
+    });
+
+    page.drawText(`${req.body.carrera}`, { 
+        x: 365, 
+        y: 573, 
+        size: 10, 
+        font: timesFont, 
+        color: rgb(0, 0, 0)
+    });
+    // N. Registro en Montserrat Bold, tamaño 11
+    page.drawText(`${req.body.nregistro}`, {
+        x: 343,
+        y: 554,
+        size: 10,
+        font: timesFont,
+        color: rgb(0, 0, 0)
+    });
+    page.drawText(`${req.body.correo}`, { 
+        x: 355.8,
+        y: 535,
+        size: 10,
+        font: timesFont,
+        color: rgb(0, 0, 0)
+        });
+    page.drawText(`Actividades: ${req.body.actividades}`, { x: 500, y: 460 });
+    page.drawText(`${req.body.encargadoDirecto}`, {
+        x: 400,
+        y: 190,
+        size: 10,
+        font: montserratLight,
+        color: rgb(0, 0, 0)
+    });
+    page.drawText(`Cargo: ${req.body.cargo}`, { x: 500, y: 480 });
+
+    // Bloquear la edición aplanando el formulario (quitar interactividad)
+    try {
+        const form = pdfDoc.getForm();
+        form.flatten();
+    } catch (error) {
+        // Si no hay formulario, ignora el error
+    }
+
+    const pdfOutput = await pdfDoc.save();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=reporte-mensual.pdf');
+    res.send(pdfOutput);
 });
 
 const PORT = process.env.PORT || 3000;

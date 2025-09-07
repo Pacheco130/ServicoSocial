@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Mensual</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Reporte Mensual</h1>
+        <img src="/img/CECyt19.png" alt="Logo Izquierdo" class="corner-image left">
+        <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
+    </header>
+    <form id="reporteForm" method="POST" action="/generate-reporte-mensual">
+        <div id="fase1">
+            <div class="form-group">
+                <label for="nreporte">N. Reporte:</label>
+                <input type="text" id="nreporte" name="nreporte" required>
+            </div>
+            <div class="form-group">
+                <label for="fecha">Fecha:</label>
+                <input type="date" id="fecha" name="fecha" required>
+            </div>
+            <div class="form-group">
+                <label for="periodoInicio">Periodo de:</label>
+                <input type="date" id="periodoInicio" name="periodoInicio" required>
+            </div>
+            <div class="form-group">
+                <label for="periodoFin">Al:</label>
+                <input type="date" id="periodoFin" name="periodoFin" required>
+            </div>
+            <div class="form-group">
+                <label for="nombreA">Nombre:</label>
+                <input type="text" id="nombreA" name="nombreA" required>
+            </div>
+            <div class="form-group">
+                <label for="boleta">Boleta:</label>
+                <input type="text" id="boleta" name="boleta" required>
+            </div>
+            <div class="form-group">
+                <label for="semestre">Semestre:</label>
+                <input type="text" id="semestre" name="semestre" required>
+            </div>
+            <div class="form-group">
+                <label for="telefono">Teléfono:</label>
+                <input type="tel" id="telefono" name="telefono" required>
+            </div>
+            <div class="form-group">
+                <label for="carrera">Carrera:</label>
+                <input type="text" id="carrera" name="carrera" required>
+            </div>
+            <div class="form-group">
+                <label for="nregistro">N. Registro:</label>
+                <input type="text" id="nregistro" name="nregistro" required>
+            </div>
+            <div class="form-group">
+                <label for="correo">Correo:</label>
+                <input type="email" id="correo" name="correo" required>
+            </div>
+            <div class="form-group">
+                <label for="prestatario">Prestatario:</label>
+                <input type="text" id="prestatario" name="prestatario" required>
+            </div>
+             <div class="form-group">
+                <label for="encargadoDirecto">Encargado Directo:</label>
+                <input type="text" id="encargadoDirecto" name="encargadoDirecto" required>
+            </div>
+            <div class="form-group">
+                <label for="cargo">Cargo:</label>
+                <input type="text" id="cargo" name="cargo" required>
+            </div>
+            <button id="siguienteBtn">Siguiente</button>
+        </div>
+        <div id="fase2">
+            <div class="form-group">
+                <label for="actividades">Actividades:</label>
+                <textarea id="actividades" name="actividades" required></textarea>
+            </div>
+            <button type="submit">Descargar Reporte</button>
+        </div>
+    </form>
+    <script src="reporte-mensual.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
