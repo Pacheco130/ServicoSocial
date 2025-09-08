@@ -247,13 +247,18 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: timesFont,
         color: rgb(0, 0, 0)
         });
-    page.drawText(`${req.body.actividades}`, { 
-        x: 54, 
-        y: 468,
-        size: 11,
-        font: timesFont,
-        color: rgb(0, 0, 0)
-     });
+    // Imprimir las 7 actividades en el PDF
+    const actividadesY = [468, 455, 442, 429, 416, 403, 390]; // Y para cada actividad
+    for (let i = 1; i <= 7; i++) {
+        const actividad = req.body[`actividad${i}`] || '';
+        page.drawText(actividad, {
+            x: 54,
+            y: actividadesY[i - 1],
+            size: 11,
+            font: timesFont,
+            color: rgb(0, 0, 0)
+        });
+    }
      // Encargado Directo y Cargo en Montserrat Light, tamaño 10
     page.drawText(`${req.body.encargadoDirecto}`, {
         x: 400,

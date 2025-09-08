@@ -85,6 +85,30 @@ button:hover {
     box-shadow: 0 2px 16px #74284422;
     padding: 32px 24px;
 }
+.actividades-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 8px;
+}
+.actividades-group input[type="text"] {
+    background: #f7f7fa;
+    border: 1.5px solid #74284488;
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 10px 12px;
+    transition: border 0.2s;
+    box-shadow: 0 2px 8px #74284411;
+}
+.actividades-group input[type="text"]:focus {
+    border-color: #742844;
+    outline: none;
+    background: #fff;
+}
+.form-group label[for^="actividad"] {
+    font-weight: 500;
+    color: #742844;
+}
 @media (max-width: 700px) {
     .form-flex {
         flex-direction: column;
