@@ -121,6 +121,16 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
     }
 });
 
+const periodos = [
+    { inicio: "16 de octubre de 2025", fin: "15 de noviembre de 2025" },
+    { inicio: "16 de noviembre de 2025", fin: "15 de diciembre de 2025" },
+    { inicio: "16 de diciembre de 2025", fin: "15 de enero de 2026" },
+    { inicio: "16 de enero de 2026", fin: "15 de febrero de 2026" },
+    { inicio: "16 de febrero de 2026", fin: "15 de marzo de 2026" },
+    { inicio: "16 de marzo de 2026", fin: "15 de abril de 2026" },
+    { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
+];
+
 app.post('/generate-reporte-mensual', async (req, res) => {
     // Leer la plantilla PDF desde la raíz del proyecto
     const pdfPath = path.join(__dirname, 'reporte-mensual.pdf');
@@ -163,6 +173,8 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     }
 
     const page = pdfDoc.getPages()[0];
+    const nreporte = parseInt(req.body.nreporte);
+    const periodo = periodos[nreporte - 1];
     // N. Reporte con Montserrat Bold, tamaño 14
     page.drawText(`${req.body.nreporte}`, {
         x: 385,
@@ -179,9 +191,8 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: montserratLight,
         color: rgb(0, 0, 0)
     });
-    // Periodo con formato solicitado, Times New Roman, tamaño 12 y fechas completas
-    const periodoTexto = `${fechaCompleta(req.body.periodoInicio)} al ${fechaCompleta(req.body.periodoFin)}`;
-    page.drawText(periodoTexto, {
+    // Periodo con fechas fijas según el número de reporte
+    page.drawText(`Periodo de: ${periodo.inicio} Al: ${periodo.fin}`, {
         x: 210,
         y: 639,
         size: 12,
