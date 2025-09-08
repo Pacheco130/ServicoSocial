@@ -15,6 +15,52 @@
                 fase1.style.display = 'none';
                 fase2.style.display = 'block';
             });
+
+            // Restricción de fecha según reporte
+            const periodos = [
+                { fin: '2025-11-15' },
+                { fin: '2025-12-15' },
+                { fin: '2026-01-15' },
+                { fin: '2026-02-15' },
+                { fin: '2026-03-15' },
+                { fin: '2026-04-15' },
+                { fin: '2026-05-14' }
+            ];
+            const nreporte = document.getElementById('nreporte');
+            const fecha = document.getElementById('fecha');
+            nreporte.addEventListener('change', function () {
+                const idx = parseInt(nreporte.value) - 1;
+                if (idx >= 0 && periodos[idx]) {
+                    let fin = new Date(periodos[idx].fin);
+                    let diasHabiles = [];
+                    let count = 0;
+                    let d = new Date(fin);
+                    d.setDate(d.getDate() + 1); // Empieza al día siguiente
+                    while (diasHabiles.length < 5) {
+                        if (d.getDay() !== 0 && d.getDay() !== 6) { // 0=Domingo, 6=Sábado
+                            diasHabiles.push(new Date(d));
+                        }
+                        d.setDate(d.getDate() + 1);
+                    }
+                    const min = diasHabiles[0].toISOString().slice(0,10);
+                    const max = diasHabiles[4].toISOString().slice(0,10);
+                    fecha.min = min;
+                    fecha.max = max;
+                    fecha.value = min;
+                } else {
+                    fecha.min = '';
+                    fecha.max = '';
+                    fecha.value = '';
+                }
+            });
+
+            fecha.addEventListener('input', function () {
+                const d = new Date(fecha.value);
+                if (d.getDay() === 0 || d.getDay() === 6) {
+                    alert('No puedes seleccionar sábado ni domingo.');
+                    fecha.value = '';
+                }
+            });
         });
     </script>
 </head>
