@@ -12,8 +12,11 @@
   "description": "",
   "dependencies": {
     "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
     "express": "^5.1.0",
     "fontkit": "^2.0.4",
-    "pdf-lib": "^1.17.1"
+    "multer": "^2.0.2",
+    "pdf-lib": "^1.17.1",
+    "sqlite3": "^5.1.7"
   }
 }

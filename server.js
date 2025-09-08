@@ -3,11 +3,36 @@ const fs = require('fs');
 const path = require('path');
 const { PDFDocument, rgb } = require('pdf-lib');
 const bodyParser = require('body-parser');
+const sqlite3 = require('sqlite3').verbose();
+const multer = require('multer');
+const upload = multer();
+const cors = require('cors');
 
 const app = express();
+app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+
+// Conexión a la base de datos SQLite en modo serializado
+const db = new sqlite3.Database('./servicio_social.db', sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+    if (err) {
+        console.error('Error abriendo la base de datos:', err.message);
+    }
+});
+db.serialize(); // Fuerza consultas en serie
+
+// Crear tabla de alumnos si no existe (actualizada)
+db.run(`CREATE TABLE IF NOT EXISTS alumnos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    boleta TEXT,
+    nombre TEXT,
+    apellidoPaterno TEXT,
+    apellidoMaterno TEXT,
+    curp TEXT,
+    semestre INTEGER,
+    NumR INTEGER
+)`);
 
 // Mueve la ruta raíz antes del middleware estático para que se sirva menu.html al entrar a localhost
 app.get('/', function(req, res) {
@@ -315,6 +340,43 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=reporte-mensual.pdf');
     res.send(pdfOutput);
+});
+
+app.post('/registrar-alumno', upload.none(), (req, res) => {
+    console.log('Datos recibidos:', req.body); // Depuración
+    const { boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestre, NumR } = req.body;
+    // Validación básica
+    if (!boleta || !nombre || !apellidoPaterno || !apellidoMaterno || !curp || !semestre || !NumR) {
+        return res.status(400).send('Todos los campos son obligatorios');
+    }
+    const semestreNum = parseInt(semestre);
+    const numRNum = parseInt(NumR);
+    if (isNaN(semestreNum) || isNaN(numRNum)) {
+        return res.status(400).send('Semestre y Número de registro deben ser numéricos');
+    }
+    db.get(
+        `SELECT * FROM alumnos WHERE Boleta = ? AND Nombre = ? AND apellidoPaterno = ? AND apellidoMaterno = ? AND curp = ? AND Semestre = ? AND NumR = ?`,
+        [boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestreNum, numRNum],
+        (err, row) => {
+            if (err) {
+                return res.status(500).send('Error al consultar alumno');
+            }
+            if (row) {
+                return res.send('Este alumno ya está registrado');
+            }
+            db.run(
+                `INSERT INTO alumnos (Boleta, Nombre, apellidoPaterno, apellidoMaterno, curp, Semestre, NumR) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+                [boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestreNum, numRNum],
+                function (err) {
+                    if (err) {
+                        console.error('Error SQLite:', err.message);
+                        return res.status(500).send('Error al registrar alumno: ' + err.message);
+                    }
+                    res.send('Alumno registrado correctamente');
+                }
+            );
+        }
+    );
 });
 
 const PORT = process.env.PORT || 3000;
