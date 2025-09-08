@@ -19,12 +19,20 @@ app.use('/img', express.static(path.join(__dirname, 'img'))); // Agrega esta lí
 // Agrega una ruta estática para servir archivos desde la raíz (con precaución)
 app.use(express.static(__dirname));
 
+const periodos = [
+    { inicio: "16 de octubre de 2025", fin: "15 de noviembre de 2025" },
+    { inicio: "16 de noviembre de 2025", fin: "15 de diciembre de 2025" },
+    { inicio: "16 de diciembre de 2025", fin: "15 de enero de 2026" },
+    { inicio: "16 de enero de 2026", fin: "15 de febrero de 2026" },
+    { inicio: "16 de febrero de 2026", fin: "15 de marzo de 2026" },
+    { inicio: "16 de marzo de 2026", fin: "15 de abril de 2026" },
+    { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
+];
+
 app.post('/generate-pdf', async (req, res) => {
     try {
         const { 
             reporteNo, 
-            periodoInicio, 
-            periodoFin, 
             registro, 
             boleta, 
             unidadAcademica, 
@@ -33,15 +41,8 @@ app.post('/generate-pdf', async (req, res) => {
             responsableNombre,     // Nombre del Responsable
             responsableCargo       // Cargo del Responsable
         } = req.body;
-        
-        // Agregar función para reformatar fechas de YYYY-MM-DD a DD/MM/YYYY
-        function formatDate(dateString) {
-            const parts = dateString.split('-');
-            return parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : dateString;
-        }
-        const formattedPeriodoInicio = formatDate(periodoInicio);
-        const formattedPeriodoFin = formatDate(periodoFin);
-        
+        // Asigna las fechas según el número de reporte
+        const periodo = periodos[parseInt(reporteNo) - 1];
         const templatePath = path.join(__dirname, 'control-asis.pdf');
         const templateBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(templateBytes);
@@ -53,13 +54,13 @@ app.post('/generate-pdf', async (req, res) => {
         const centerX = (width - textWidth) / 2;
         const newX = centerX - 10;
         firstPage.drawText(`${reporteNo}`, { x: newX, y: height - 100, size: fontSize, font: font });
-        firstPage.drawText(`${formattedPeriodoInicio}`, { x: 100, y: height - 118, size: 10 });
-        firstPage.drawText(`${formattedPeriodoFin}`, { x: 250, y: height - 118, size: 10 });
-        firstPage.drawText(`${registro}`, { x: 515, y: height - 118, size: 10 });
-        firstPage.drawText(`${nombre}`, { x: 140, y: height - 135, size: 10 });
-        firstPage.drawText(`${boleta}`, { x: 480, y: height - 135, size: 10 });
-        firstPage.drawText(`${unidadAcademica}`, { x: 150, y: height - 150, size: 10 });
-        firstPage.drawText(`${carrera}`, { x: 350, y: height - 150, size: 10 });
+        firstPage.drawText(`${periodo.inicio}`, { x: 88, y: height - 117, size: 10 });
+        firstPage.drawText(`${periodo.fin}`, { x: 230, y: height - 117, size: 10 });
+        firstPage.drawText(`${registro}`, { x: 500, y: height - 117, size: 10 });
+        firstPage.drawText(`${nombre}`, { x: 135, y: height - 134, size: 10 });
+        firstPage.drawText(`${boleta}`, { x: 466, y: height - 134, size: 10 });
+        firstPage.drawText(`${unidadAcademica}`, { x: 122, y: height - 151, size: 10 });
+        firstPage.drawText(`${carrera}`, { x: 344, y: height - 151, size: 10 });
         firstPage.drawText(`${responsableNombre}`, { x: 85, y: height - 730, size: 10, font: font, color: rgb(0,0,0) });
         firstPage.drawText(`${responsableCargo}`, { x: 100, y: height - 740, size: 10, font: font, color: rgb(0,0,0) });
 
@@ -99,7 +100,7 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         firstPage.drawText(`${grupo}`, { x: 178, y: height - 267, size: 12 });
         firstPage.drawText(`${supervisor}`, { x: 90, y: height - 394, size: 12 });
         firstPage.drawText(`${nombre}`, { x: 80, y: height - 750, size: 12 });      // segunda vez nombre
-        firstPage.drawText(`${supervisor}`, { x: 355, y: height - 750, size: 12 }); // segunda vez supervisor
+        firstPage.drawText(`${supervisor}`, { x: 370, y: height - 750, size: 12 }); // segunda vez supervisor
 
         // Bloquear la edición aplanando el formulario (fusiona los campos interactivos si existen)
         try {
@@ -120,16 +121,6 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         res.status(500).send('Error generando carta de aceptación');
     }
 });
-
-const periodos = [
-    { inicio: "16 de octubre de 2025", fin: "15 de noviembre de 2025" },
-    { inicio: "16 de noviembre de 2025", fin: "15 de diciembre de 2025" },
-    { inicio: "16 de diciembre de 2025", fin: "15 de enero de 2026" },
-    { inicio: "16 de enero de 2026", fin: "15 de febrero de 2026" },
-    { inicio: "16 de febrero de 2026", fin: "15 de marzo de 2026" },
-    { inicio: "16 de marzo de 2026", fin: "15 de abril de 2026" },
-    { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
-];
 
 app.post('/generate-reporte-mensual', async (req, res) => {
     // Leer la plantilla PDF desde la raíz del proyecto
