@@ -190,7 +190,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     });
     page.drawText(`${req.body.nombreA}`, {
         x: 100,
-        y: 591,
+        y: 591.5,
         size: 10,
         font: timesFont,
         color: rgb(0, 0, 0)
@@ -247,7 +247,14 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: timesFont,
         color: rgb(0, 0, 0)
         });
-    page.drawText(`Actividades: ${req.body.actividades}`, { x: 500, y: 460 });
+    page.drawText(`${req.body.actividades}`, { 
+        x: 54, 
+        y: 468,
+        size: 11,
+        font: timesFont,
+        color: rgb(0, 0, 0)
+     });
+     // Encargado Directo y Cargo en Montserrat Light, tamaño 10
     page.drawText(`${req.body.encargadoDirecto}`, {
         x: 400,
         y: 190,
@@ -255,7 +262,21 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: montserratLight,
         color: rgb(0, 0, 0)
     });
-    page.drawText(`Cargo: ${req.body.cargo}`, { x: 500, y: 480 });
+    page.drawText(`${req.body.cargo}`, { 
+        x: 430, 
+        y: 180,
+        size: 10,
+        font: montserratLight,
+        color: rgb(0, 0, 0)
+     });
+
+      page.drawText(`${req.body.nombreA}`, {
+        x: 90,
+        y: 190,
+        size: 10,
+        font: montserratLight,
+        color: rgb(0, 0, 0)
+    });
 
     // Bloquear la edición aplanando el formulario (quitar interactividad)
     try {
