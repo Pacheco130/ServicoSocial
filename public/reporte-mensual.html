@@ -74,8 +74,8 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="nombreA">Nombre:</label>
-                            <input type="text" id="nombreA" name="nombreA" required>
+                            <label for="nombreA">Nombre del Alumno:</label>
+                            <input type="text" id="nombreA" name="nombreA" required title="Solo letras y acentos permitidos">
                         </div>
                         <div class="form-group">
                             <label for="boleta">Boleta:</label>
@@ -91,13 +91,13 @@
                         </div>
                         <div class="form-group">
                             <label for="encargadoDirecto">Encargado Directo:</label>
-                            <input type="text" id="encargadoDirecto" name="encargadoDirecto" required>
+                            <input type="text" id="encargadoDirecto" name="encargadoDirecto" required title="Solo letras y acentos permitidos">
                         </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
                             <label for="nregistro">N. Registro:</label>
-                            <input type="text" id="nregistro" name="nregistro" required>
+                            <input type="number" id="nregistro" name="nregistro" required min="1">
                         </div>
                         <div class="form-group">
                             <label for="carrera">Carrera:</label>
@@ -131,7 +131,7 @@
                         </div>
                     </div>
                 </div>
-                <button id="siguienteBtn">Siguiente</button>
+                <button id="siguienteBtn" type="button">Siguiente</button>
             </div>
             <div id="fase2">
                 <div class="form-group">
