@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <title>Reporte Mensual</title>
     <link rel="stylesheet" href="reporte-mensual.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const fase1 = document.getElementById('fase1');
@@ -16,48 +18,31 @@
                 fase2.style.display = 'block';
             });
 
-            // Restricción de fecha según reporte
-            const periodos = [
-                { fin: '2025-11-15' },
-                { fin: '2025-12-15' },
-                { fin: '2026-01-15' },
-                { fin: '2026-02-15' },
-                { fin: '2026-03-15' },
-                { fin: '2026-04-15' },
-                { fin: '2026-05-14' }
+            // Fechas hábiles manuales por reporte
+            const fechasPorReporte = [
+                ["2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24"], // Reporte 1
+                ["2025-12-16","2025-12-17","2025-12-18","2025-12-19","2026-01-05"], // Reporte 2
+                ["2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22"], // Reporte 3
+                ["2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20"], // Reporte 4
+                ["2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23"], // Reporte 5
+                ["2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22"], // Reporte 6
+                ["2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22"]  // Reporte 7
             ];
             const nreporte = document.getElementById('nreporte');
             const fecha = document.getElementById('fecha');
+            let fp = null;
             nreporte.addEventListener('change', function () {
                 const idx = parseInt(nreporte.value) - 1;
-                if (idx >= 0 && periodos[idx]) {
-                    let fin = new Date(periodos[idx].fin);
-                    let diasHabiles = [];
-                    let count = 0;
-                    let d = new Date(fin);
-                    d.setDate(d.getDate() + 1); // Empieza al día siguiente
-                    while (diasHabiles.length < 5) {
-                        if (d.getDay() !== 0 && d.getDay() !== 6) { // 0=Domingo, 6=Sábado
-                            diasHabiles.push(new Date(d));
-                        }
-                        d.setDate(d.getDate() + 1);
-                    }
-                    const min = diasHabiles[0].toISOString().slice(0,10);
-                    const max = diasHabiles[4].toISOString().slice(0,10);
-                    fecha.min = min;
-                    fecha.max = max;
-                    fecha.value = min;
+                if (fp) fp.destroy();
+                if (idx >= 0 && fechasPorReporte[idx]) {
+                    fp = flatpickr(fecha, {
+                        dateFormat: "Y-m-d",
+                        enable: fechasPorReporte[idx],
+                        defaultDate: fechasPorReporte[idx][0],
+                        minDate: fechasPorReporte[idx][0]
+                    });
+                    fecha.value = fechasPorReporte[idx][0];
                 } else {
-                    fecha.min = '';
-                    fecha.max = '';
-                    fecha.value = '';
-                }
-            });
-
-            fecha.addEventListener('input', function () {
-                const d = new Date(fecha.value);
-                if (d.getDay() === 0 || d.getDay() === 6) {
-                    alert('No puedes seleccionar sábado ni domingo.');
                     fecha.value = '';
                 }
             });
@@ -134,7 +119,7 @@
                         </div>
                         <div class="form-group">
                             <label for="fecha">Fecha:</label>
-                            <input type="date" id="fecha" name="fecha" required>
+                            <input type="text" id="fecha" name="fecha" required>
                         </div>
                         <div class="form-group">
                             <label for="correo">Correo:</label>
