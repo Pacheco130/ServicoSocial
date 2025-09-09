@@ -299,11 +299,10 @@ app.post('/generate-reporte-mensual', async (req, res) => {
                 font: timesFont,
                 color: rgb(0, 0, 0)
             });
-            y -= 12; // Salto de línea para la siguiente línea de texto
+            y -= 12; 
         }
-        yBase = y - 8; // Espacio extra entre actividades
+        yBase = y - 8; 
     }
-     // Encargado Directo y Cargo en Montserrat Light, tamaño 10
     page.drawText(`${req.body.encargadoDirecto}`, {
         x: 400,
         y: 190,
@@ -327,12 +326,10 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         color: rgb(0, 0, 0)
     });
 
-    // Bloquear la edición aplanando el formulario (quitar interactividad)
     try {
         const form = pdfDoc.getForm();
         form.flatten();
     } catch (error) {
-        // Si no hay formulario, ignora el error
     }
 
     const pdfOutput = await pdfDoc.save();
@@ -343,7 +340,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
 });
 
 app.post('/registrar-alumno', upload.none(), (req, res) => {
-    console.log('Datos recibidos:', req.body); // Depuración
+    console.log('Datos recibidos:', req.body); 
     const { boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestre, NumR } = req.body;
     // Validación básica
     if (!boleta || !nombre || !apellidoPaterno || !apellidoMaterno || !curp || !semestre || !NumR) {
