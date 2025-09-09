@@ -6,6 +6,7 @@
     <link rel="stylesheet" href="/css/reporte-mensual.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const fase1 = document.getElementById('fase1');
@@ -39,7 +40,8 @@
                         dateFormat: "Y-m-d",
                         enable: fechasPorReporte[idx],
                         defaultDate: fechasPorReporte[idx][0],
-                        minDate: fechasPorReporte[idx][0]
+                        minDate: fechasPorReporte[idx][0],
+                        locale: "es"
                     });
                     fecha.value = fechasPorReporte[idx][0];
                 } else {
