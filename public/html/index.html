@@ -4,6 +4,22 @@
     <meta charset="UTF-8">
     <title>IPN - CONTROL DE ASISTENCIA</title>
     <link rel="stylesheet" href="../css/style.css">
+    <style>
+        #mensaje-flotante {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4caf50;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 9999;
+        }
+    </style>
 </head>
 <body> 
     <header>
@@ -77,6 +93,7 @@
         
         <button type="submit">Descargar</button>
     </form>
+    <div id="mensaje-flotante">Descargando PDF...</div>
     <script src="../js/script.js"></script>
     <script>
         const horaEntrada = document.getElementById('horaEntrada');
@@ -87,10 +104,11 @@
                 horaSalida.min = horaEntrada.value;
                 // Calcular máximo permitido (4 horas después)
                 let [h, m] = horaEntrada.value.split(':').map(Number);
-                h += 4;
-                if (h > 23) h = 23;
-                const maxHora = h.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
-                horaSalida.max = maxHora;
+                let salidaH = h + 4;
+                if (salidaH > 23) salidaH = 23;
+                const salidaAuto = salidaH.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
+                horaSalida.value = salidaAuto;
+                horaSalida.max = salidaAuto;
             } else {
                 horaSalida.value = '';
                 horaSalida.disabled = true;
@@ -110,7 +128,10 @@
         });
         document.getElementById('pdfForm').addEventListener('submit', function(e) {
             const reporteNo = document.getElementById('reporteNo').value;
-            alert('Reporte seleccionado: ' + reporteNo);
+            // Mostrar mensaje flotante
+            const mensaje = document.getElementById('mensaje-flotante');
+            mensaje.style.display = 'block';
+            setTimeout(() => { mensaje.style.display = 'none'; }, 3000);
         });
     </script>
 </body>
