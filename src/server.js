@@ -65,8 +65,13 @@ app.post('/generate-pdf', async (req, res) => {
             responsableNombre,     // Nombre del Responsable
             responsableCargo       // Cargo del Responsable
         } = req.body;
-        // Asigna las fechas según el número de reporte
-        const periodo = periodos[parseInt(reporteNo) - 1];
+        // Validar el número de reporte
+        let numReporte = parseInt(reporteNo);
+        console.log('Número de reporte recibido:', reporteNo, 'Interpretado como:', numReporte);
+        if (isNaN(numReporte) || numReporte < 1 || numReporte > 7) {
+            return res.status(400).send('Número de reporte inválido');
+        }
+        const periodo = periodos[numReporte - 1];
         const templatePath = path.join(__dirname, '../docs/control-asis.pdf');
         const templateBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(templateBytes);
@@ -87,6 +92,81 @@ app.post('/generate-pdf', async (req, res) => {
         firstPage.drawText(`${carrera}`, { x: 344, y: height - 151, size: 10 });
         firstPage.drawText(`${responsableNombre}`, { x: 85, y: height - 730, size: 10, font: font, color: rgb(0,0,0) });
         firstPage.drawText(`${responsableCargo}`, { x: 100, y: height - 740, size: 10, font: font, color: rgb(0,0,0) });
+        
+
+        // Función robusta para convertir "16 de octubre de 2025" a "16/10/2025"
+        function fechaTextoADMY(fechaTexto) {
+            const meses = {
+                'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 'mayo': '05', 'junio': '06',
+                'julio': '07', 'agosto': '08', 'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
+            };
+            const partes = fechaTexto.split(' de ');
+            if (partes.length !== 3) return fechaTexto;
+            const dia = partes[0].padStart(2, '0');
+            const mes = meses[partes[1].toLowerCase().trim()] || '01';
+            const anio = partes[2];
+            return `${dia}/${mes}/${anio}`;
+        }
+        // Después de imprimir los datos principales, imprime los días hábiles
+        const inicioPeriodo = fechaTextoADMY(periodo.inicio);
+        const finPeriodo = fechaTextoADMY(periodo.fin);
+        // Ajuste para crear fechas en formato YYYY-MM-DD
+        function getDiasHabiles(inicio, fin) {
+            const mesesAbrev = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
+            function textoADate(fecha) {
+                const [dia, mes, anio] = fecha.split('/');
+                // Usar Date.UTC para evitar desfase por zona horaria
+                return new Date(Date.UTC(anio, parseInt(mes)-1, dia));
+            }
+            const dias = [];
+            let fecha = textoADate(inicio);
+            const fechaFin = textoADate(fin);
+            while (fecha.getTime() <= fechaFin.getTime()) {
+                const diaSemana = fecha.getUTCDay();
+                if (diaSemana >= 1 && diaSemana <= 5) {
+                    const dia = fecha.getUTCDate().toString().padStart(2, '0');
+                    const mes = mesesAbrev[fecha.getUTCMonth()];
+                    const anio = fecha.getUTCFullYear();
+                    dias.push(`${dia}/${mes}/${anio}`);
+                }
+                // Usar setUTCDate con copia para evitar mutar el objeto original
+                fecha = new Date(fecha.getTime() + 24*60*60*1000);
+            }
+            return dias;
+        }
+        const diasHabiles = getDiasHabiles(inicioPeriodo, finPeriodo);
+        let yDias = height - 180;
+        firstPage.drawText('', { x: 60, y: yDias, size: 10, font: font });
+        firstPage.drawText('', { x: 220, y: yDias, size: 10, font: font });
+        firstPage.drawText('', { x: 300, y: yDias, size: 10, font: font });
+        firstPage.drawText('', { x: 400, y: yDias, size: 10, font: font });
+        yDias -= 15;
+        const horaEntrada = req.body.horaEntrada || '';
+        const horaSalida = req.body.horaSalida || '';
+        function calcularHoras(entrada, salida) {
+            if (!entrada || !salida) return 0;
+            let [h1, m1] = entrada.split(':').map(Number);
+            let [h2, m2] = salida.split(':').map(Number);
+            let diff = (h2*60 + m2) - (h1*60 + m1);
+            if (diff < 0) return 0;
+            return diff;
+        }
+        const minutosPorDia = calcularHoras(horaEntrada, horaSalida);
+        const totalDias = diasHabiles.length;
+        let sumaMinutos = minutosPorDia * totalDias;
+        let sumaHoras = Math.floor(sumaMinutos/60);
+        let sumaMin = sumaMinutos%60;
+        let sumaTexto = sumaMin > 0 ? `${sumaHoras}h ${sumaMin}m` : `${sumaHoras} hrs`;
+        diasHabiles.forEach(dia => {
+            let horasTexto = minutosPorDia > 0 ? (minutosPorDia%60 > 0 ? `${Math.floor(minutosPorDia/60)}h ${minutosPorDia%60}m` : `${Math.floor(minutosPorDia/60)} hrs`) : '';
+            firstPage.drawText(dia, { x: 95, y: yDias, size: 10, font: font });
+            firstPage.drawText(horaEntrada, { x: 228, y: yDias, size: 10, font: font });
+            firstPage.drawText(horaSalida, { x: 315, y: yDias, size: 10, font: font });
+            firstPage.drawText(horasTexto, { x: 385, y: yDias, size: 10, font: font });
+            yDias -= 18;
+        });
+        // Imprimir suma total de horas en posición fija
+        firstPage.drawText(`${sumaTexto}`, { x: 380, y: 165, size: 12, font: font, color: rgb(0,0,0) });
 
         // Bloquear la edición aplanando el formulario (fusiona los campos interactivos si existen)
         try {
