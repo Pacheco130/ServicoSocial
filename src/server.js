@@ -177,9 +177,12 @@ app.post('/generate-pdf', async (req, res) => {
         }
         
         const pdfBytes = await pdfDoc.save();
+        // Enviar PDF y total de minutos como JSON y PDF
         res.set({
             'Content-Type': 'application/pdf',
-            'Content-Disposition': 'attachment; filename="reporte.pdf"'
+            'Content-Disposition': 'attachment; filename="reporte.pdf"',
+            'X-Total-Minutos': sumaMinutos,
+            'X-Total-Horas': sumaHoras
         });
         res.send(pdfBytes);
     } catch (error) {

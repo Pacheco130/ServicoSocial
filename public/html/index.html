@@ -88,7 +88,7 @@
         </div>
         <div class="form-group">
             <label for="horaSalida">Hora de salida:</label>
-            <input type="time" id="horaSalida" name="horaSalida" required disabled>
+            <input type="time" id="horaSalida" name="horaSalida" required disabled readonly>
         </div>
         
         <button type="submit">Descargar</button>
@@ -101,6 +101,7 @@
         horaEntrada.addEventListener('change', function() {
             if (horaEntrada.value) {
                 horaSalida.disabled = false;
+                horaSalida.readOnly = true;
                 horaSalida.min = horaEntrada.value;
                 // Calcular máximo permitido (4 horas después)
                 let [h, m] = horaEntrada.value.split(':').map(Number);
@@ -112,6 +113,7 @@
             } else {
                 horaSalida.value = '';
                 horaSalida.disabled = true;
+                horaSalida.readOnly = false;
             }
         });
         horaSalida.addEventListener('input', function() {
