@@ -53,7 +53,7 @@ const periodos = [
     { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
 ];
 
-app.post('/generate-pdf', async (req, res) => {
+app.post('/generate-pdf', upload.none(), async (req, res) => {
     try {
         const { 
             reporteNo, 
@@ -177,12 +177,9 @@ app.post('/generate-pdf', async (req, res) => {
         }
         
         const pdfBytes = await pdfDoc.save();
-        // Enviar PDF y total de minutos como JSON y PDF
         res.set({
             'Content-Type': 'application/pdf',
-            'Content-Disposition': 'attachment; filename="reporte.pdf"',
-            'X-Total-Minutos': sumaMinutos,
-            'X-Total-Horas': sumaHoras
+            'Content-Disposition': 'attachment; filename="reporte.pdf"'
         });
         res.send(pdfBytes);
     } catch (error) {
@@ -341,7 +338,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: timesFont, 
         color: rgb(0, 0, 0)
     });
-    // N. Registro en Montserrat Bold, tamaño 11
+    // N. Registro in Montserrat Bold, tamaño 11
     page.drawText(`${req.body.nregistro}`, {
         x: 343,
         y: 554,
