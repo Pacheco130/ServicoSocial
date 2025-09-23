@@ -133,5 +133,4 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     });
 
-    // Opcional: puedes validar los campos de la fase 1 antes de avanzar
 });
