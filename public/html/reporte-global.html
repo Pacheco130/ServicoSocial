@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Reporte Global</title>
+    <link rel="stylesheet" href="/css/reporte-mensual.css">
+</head>
+<body>
+    <header>
+        <h1>Reporte Global</h1>
+        <img src="/img/CECyt19.png" alt="Logo Izquierdo" class="corner-image left">
+        <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
+    </header>
+    <div class="form-container">
+        <form id="reporteGlobalForm" method="POST" action="/generate-reporte-global">
+            <div class="form-flex">
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="nombre">Nombre:</label>
+                        <input type="text" id="nombre" name="nombre" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellidoP">Apellido Paterno:</label>
+                        <input type="text" id="apellidoP" name="apellidoP" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="apellidoM">Apellido Materno:</label>
+                        <input type="text" id="apellidoM" name="apellidoM" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="boleta">Boleta:</label>
+                        <input type="text" id="boleta" name="boleta" required pattern="\d{10}" maxlength="10" inputmode="numeric" title="Ingrese exactamente 10 dígitos numéricos" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    </div>
+                    <div class="form-group">
+                        <label for="semestre">Semestre:</label>
+                        <select id="semestre" name="semestre" required>
+                            <option value="">Seleccione...</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="carrera">Carrera:</label>
+                        <select id="carrera" name="carrera" required>
+                            <option value="">Seleccione...</option>
+                            <option value="Tecnico en Aeronáutica">Técnico en Aeronáutica</option>
+                            <option value="Tecnico en Alimentos">Técnico en Alimentos</option>
+                            <option value="Tecnico en Construccion">Técnico en Construcción</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="nregistro">N. de Registro:</label>
+                        <input type="text" id="nregistro" name="nregistro" required>
+                    </div>
+                </div>
+                <div class="form-col">
+                    <div class="form-group">
+                        <label for="telefono">Teléfono:</label>
+                        <input type="tel" id="telefono" name="telefono" required pattern="\d{10}" maxlength="10" inputmode="numeric" title="Ingrese exactamente 10 dígitos numéricos" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                    </div>
+                    <div class="form-group">
+                        <label for="correo">Correo:</label>
+                        <input type="email" id="correo" name="correo" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="responsable">Responsable:</label>
+                        <input type="text" id="responsable" name="responsable" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="prestatario">Prestatario:</label>
+                        <input type="text" id="prestatario" name="prestatario" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="programa">Nombre del Programa:</label>
+                        <input type="text" id="programa" name="programa" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="fechaElaboracion">Fecha de elaboración:</label>
+                        <input type="date" id="fechaElaboracion" name="fechaElaboracion" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="periodo">Periodo:</label>
+                        <input type="text" id="periodo" name="periodo" required>
+                    </div>
+                </div>
+            </div>
+            <button type="submit">Descargar Reporte Global</button>
+        </form>
+    </div>
+    <script src="/js/reporte-global.js"></script>
+</body>
+</html>
