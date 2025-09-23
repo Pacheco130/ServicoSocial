@@ -471,7 +471,6 @@ app.post('/generate-reporte-global', async (req, res) => {
         const timesFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Times-New-Roman.ttf'));
         const timesFont = await pdfDoc.embedFont(timesFontBytes);
 
-        // Carga Montserrat-Light para los campos que lo requieran
         const montserratLightBytes = fs.readFileSync(path.join(__dirname, '../fonts/Montserrat-Light.otf'));
         const montserratLight = await pdfDoc.embedFont(montserratLightBytes);
 
@@ -493,7 +492,8 @@ app.post('/generate-reporte-global', async (req, res) => {
         page.drawText(`${req.body.nregistro}`, { x: 344, y: 541, size: 12, font: timesFont });
         page.drawText(`${req.body.telefono}`, { x: 160, y: 520, size: 12, font: timesFont });
         page.drawText(`${req.body.correo}`, { x: 355, y: 520, size: 12, font: timesFont });
-        page.drawText(`${req.body.responsable}`, { x: 400, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${req.body.responsable}`, { x: 390, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${req.body.cargoResponsable}`, { x: 395, y: 220, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
         page.drawText(`${req.body.prestatario}`, { x: 119, y: 499, size: 12, font: timesFont });
         page.drawText(`${req.body.programa}`, { x: 173, y: 478.5, size: 12, font: timesFont });
         page.drawText(`${nombres} ${apellidoP} ${apellidoM}`, { x: 112, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
