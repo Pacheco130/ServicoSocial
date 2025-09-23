@@ -458,6 +458,64 @@ app.post('/registrar-alumno', upload.none(), (req, res) => {
     );
 });
 
+// Agrega la ruta para generar el reporte global en PDF
+app.post('/generate-reporte-global', async (req, res) => {
+    try {
+        const pdfPath = path.join(__dirname, '../docs/reporte-global.pdf');
+        const pdfBytes = fs.readFileSync(pdfPath);
+        const pdfDoc = await PDFDocument.load(pdfBytes);
+
+        const fontkit = require('fontkit');
+        pdfDoc.registerFontkit(fontkit);
+
+        const timesFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Times-New-Roman.ttf'));
+        const timesFont = await pdfDoc.embedFont(timesFontBytes);
+
+        // Carga Montserrat-Light para los campos que lo requieran
+        const montserratLightBytes = fs.readFileSync(path.join(__dirname, '../fonts/Montserrat-Light.otf'));
+        const montserratLight = await pdfDoc.embedFont(montserratLightBytes);
+
+        const page = pdfDoc.getPages()[0];
+
+        // Divide el nombre completo en partes para obtener apellidos y nombre
+        let nombreCompleto = req.body.nombreCompleto || '';
+        let partes = nombreCompleto.trim().split(' ');
+        let apellidoP = partes.length > 1 ? partes[partes.length - 2] : '';
+        let apellidoM = partes.length > 2 ? partes[partes.length - 1] : '';
+        let nombres = partes.slice(0, partes.length - 2).join(' ');
+        if (!nombres) nombres = partes[0] || '';
+
+        // Imprime en el PDF: Apellido Paterno, Apellido Materno, Nombre(s)
+        page.drawText(`${apellidoP} ${apellidoM} ${nombres}`, { x: 107, y: 583, size: 12, font: timesFont });
+        page.drawText(`${req.body.boleta}`, { x: 99, y: 562, size: 12, font: timesFont });
+        page.drawText(`${req.body.semestre}`, { x: 111, y: 541, size: 12, font: timesFont });
+        page.drawText(`${req.body.carrera}`, { x: 369, y: 562, size: 12, font: timesFont });
+        page.drawText(`${req.body.nregistro}`, { x: 344, y: 541, size: 12, font: timesFont });
+        page.drawText(`${req.body.telefono}`, { x: 160, y: 520, size: 12, font: timesFont });
+        page.drawText(`${req.body.correo}`, { x: 355, y: 520, size: 12, font: timesFont });
+        page.drawText(`${req.body.responsable}`, { x: 400, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${req.body.prestatario}`, { x: 119, y: 499, size: 12, font: timesFont });
+        page.drawText(`${req.body.programa}`, { x: 173, y: 478.5, size: 12, font: timesFont });
+        page.drawText(`${nombres} ${apellidoP} ${apellidoM}`, { x: 112, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`Fecha de elaboración: ${req.body.fechaElaboracion}`, { x: 800, y: 500, size: 11, font: timesFont });
+        page.drawText(`Periodo: ${req.body.periodo}`, { x: 800, y: 480, size: 11, font: timesFont });
+
+        try {
+            const form = pdfDoc.getForm();
+            form.flatten();
+        } catch (error) {}
+
+        const pdfOutput = await pdfDoc.save();
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', 'attachment; filename=reporte-global.pdf');
+        res.send(pdfOutput);
+    } catch (error) {
+        console.error('Error generando reporte global:', error);
+        res.status(500).send('Error generando reporte global');
+    }
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
