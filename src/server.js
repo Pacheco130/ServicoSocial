@@ -18,23 +18,13 @@ app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser()); // <-- ya agregado
 
-// Elimina estas líneas:
-// const csrfProtection = csurf({ cookie: true }); // <-- Cambia a { cookie: true }
-// app.use(csrfProtection);
-// app.use((req, res, next) => {
-//     res.locals.csrfToken = req.csrfToken ? req.csrfToken() : '';
-//     next();
-// });
 
-// Conexión a la base de datos SQLite en modo serializado
 const db = new sqlite3.Database(path.join(__dirname, '../database/servicio_social.db'), sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
     if (err) {
         console.error('Error abriendo la base de datos:', err.message);
     }
 });
-db.serialize(); // Fuerza consultas en serie
-
-// Crear tabla de alumnos si no existe (actualizada)
+db.serialize(); 
 db.run(`CREATE TABLE IF NOT EXISTS alumnos (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     boleta TEXT,
