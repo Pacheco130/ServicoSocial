@@ -36,6 +36,11 @@ db.run(`CREATE TABLE IF NOT EXISTS alumnos (
     NumR INTEGER
 )`);
 
+// Agregar antes de las rutas estáticas
+app.get('/favicon.ico', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/favicon.ico'));
+});
+
 // Mueve la ruta raíz antes del middleware estático para que se sirva menu.html al entrar a localhost
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '../public/html/menu.html'));
