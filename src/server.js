@@ -570,3 +570,10 @@ app.use((err, req, res, next) => {
     }
     next(err);
 });
+
+const pdfRoutes = require('./routes/pdfRoutes');
+const alumnoRoutes = require('./routes/alumnoRoutes');
+
+// Usar las rutas
+app.use('/api', pdfRoutes);
+app.use('/api', alumnoRoutes);
