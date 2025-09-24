@@ -7,12 +7,24 @@ const sqlite3 = require('sqlite3').verbose();
 const multer = require('multer');
 const upload = multer();
 const cors = require('cors');
+const csurf = require('csurf'); // CSRF protection
+const xss = require('xss');     // XSS sanitization
+const cookieParser = require('cookie-parser'); // <-- Agrega esto
 
 const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
+app.use(cookieParser()); // <-- ya agregado
+
+// Elimina estas líneas:
+// const csrfProtection = csurf({ cookie: true }); // <-- Cambia a { cookie: true }
+// app.use(csrfProtection);
+// app.use((req, res, next) => {
+//     res.locals.csrfToken = req.csrfToken ? req.csrfToken() : '';
+//     next();
+// });
 
 // Conexión a la base de datos SQLite en modo serializado
 const db = new sqlite3.Database(path.join(__dirname, '../database/servicio_social.db'), sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
@@ -53,8 +65,22 @@ const periodos = [
     { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
 ];
 
+// Ejemplo de sanitización XSS para todos los datos recibidos en POST
+function sanitizeBody(body) {
+    const sanitized = {};
+    for (const key in body) {
+        if (typeof body[key] === 'string') {
+            sanitized[key] = xss(body[key]);
+        } else {
+            sanitized[key] = body[key];
+        }
+    }
+    return sanitized;
+}
+
 app.post('/generate-pdf', upload.none(), async (req, res) => {
     try {
+        const cleanBody = sanitizeBody(req.body);
         const { 
             reporteNo, 
             registro, 
@@ -64,7 +90,7 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
             nombre,                // Nombre del Prestador
             responsableNombre,     // Nombre del Responsable
             responsableCargo       // Cargo del Responsable
-        } = req.body;
+        } = cleanBody;
         // Validar el número de reporte
         let numReporte = parseInt(reporteNo);
         console.log('Número de reporte recibido:', reporteNo, 'Interpretado como:', numReporte);
@@ -141,8 +167,8 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         firstPage.drawText('', { x: 300, y: yDias, size: 10, font: font });
         firstPage.drawText('', { x: 400, y: yDias, size: 10, font: font });
         yDias -= 15;
-        const horaEntrada = req.body.horaEntrada || '';
-        const horaSalida = req.body.horaSalida || '';
+        const horaEntrada = cleanBody.horaEntrada || '';
+        const horaSalida = cleanBody.horaSalida || '';
         function calcularHoras(entrada, salida) {
             if (!entrada || !salida) return 0;
             let [h1, m1] = entrada.split(':').map(Number);
@@ -190,7 +216,8 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
 
 app.post('/generate-carta-aceptacion', async (req, res) => {
     try {
-        const { nombre, boleta, carrera, grupo, supervisor } = req.body;
+        const cleanBody = sanitizeBody(req.body);
+        const { nombre, boleta, carrera, grupo, supervisor } = cleanBody;
         const templatePath = path.join(__dirname, '../docs/carta-aceptacion.pdf');
         const templateBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(templateBytes);
@@ -367,7 +394,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     const actividadesY = [468, 455, 442, 429, 416, 403, 390]; // Y para cada actividad
     let yBase = 468;
     for (let i = 1; i <= 7; i++) {
-        const actividad = req.body[`actividad${i}`] || '';
+        const actividad = cleanBody[`actividad${i}`] || '';
         const lineas = splitText(actividad, 92);
         let y = yBase;
         for (const linea of lineas) {
@@ -397,8 +424,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: montserratLight,
         color: rgb(0, 0, 0)
      });
-
-      page.drawText(`${req.body.nombreA}`, {
+    page.drawText(`${req.body.nombreA}`, {
         x: 90,
         y: 190,
         size: 10,
@@ -422,8 +448,9 @@ app.post('/generate-reporte-mensual', async (req, res) => {
 });
 
 app.post('/registrar-alumno', upload.none(), (req, res) => {
-    console.log('Datos recibidos:', req.body); // Depuración
-    const { boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestre, NumR } = req.body;
+    const cleanBody = sanitizeBody(req.body);
+    console.log('Datos recibidos:', cleanBody); // Depuración
+    const { boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestre, NumR } = cleanBody;
     // Validación básica
     if (!boleta || !nombre || !apellidoPaterno || !apellidoMaterno || !curp || !semestre || !NumR) {
         return res.status(400).send('Todos los campos son obligatorios');
@@ -461,6 +488,7 @@ app.post('/registrar-alumno', upload.none(), (req, res) => {
 // Agrega la ruta para generar el reporte global en PDF
 app.post('/generate-reporte-global', async (req, res) => {
     try {
+        const cleanBody = sanitizeBody(req.body);
         const pdfPath = path.join(__dirname, '../docs/reporte-global.pdf');
         const pdfBytes = fs.readFileSync(pdfPath);
         const pdfDoc = await PDFDocument.load(pdfBytes);
@@ -477,7 +505,7 @@ app.post('/generate-reporte-global', async (req, res) => {
         const page = pdfDoc.getPages()[0];
 
         // Divide el nombre completo en partes para obtener apellidos y nombre
-        let nombreCompleto = req.body.nombreCompleto || '';
+        let nombreCompleto = cleanBody.nombreCompleto || '';
         let partes = nombreCompleto.trim().split(' ');
         let apellidoP = partes.length > 1 ? partes[partes.length - 2] : '';
         let apellidoM = partes.length > 2 ? partes[partes.length - 1] : '';
@@ -486,19 +514,19 @@ app.post('/generate-reporte-global', async (req, res) => {
 
         // Imprime en el PDF: Apellido Paterno, Apellido Materno, Nombre(s)
         page.drawText(`${apellidoP} ${apellidoM} ${nombres}`, { x: 107, y: 583, size: 12, font: timesFont });
-        page.drawText(`${req.body.boleta}`, { x: 99, y: 562, size: 12, font: timesFont });
-        page.drawText(`${req.body.semestre}`, { x: 111, y: 541, size: 12, font: timesFont });
-        page.drawText(`${req.body.carrera}`, { x: 369, y: 562, size: 12, font: timesFont });
-        page.drawText(`${req.body.nregistro}`, { x: 344, y: 541, size: 12, font: timesFont });
-        page.drawText(`${req.body.telefono}`, { x: 160, y: 520, size: 12, font: timesFont });
-        page.drawText(`${req.body.correo}`, { x: 355, y: 520, size: 12, font: timesFont });
-        page.drawText(`${req.body.responsable}`, { x: 390, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
-        page.drawText(`${req.body.cargoResponsable}`, { x: 395, y: 220, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
-        page.drawText(`${req.body.prestatario}`, { x: 119, y: 499, size: 12, font: timesFont });
-        page.drawText(`${req.body.programa}`, { x: 173, y: 478.5, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.boleta}`, { x: 99, y: 562, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.semestre}`, { x: 111, y: 541, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.carrera}`, { x: 369, y: 562, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.nregistro}`, { x: 344, y: 541, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.telefono}`, { x: 160, y: 520, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.correo}`, { x: 355, y: 520, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.responsable}`, { x: 390, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${cleanBody.cargoResponsable}`, { x: 395, y: 220, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${cleanBody.prestatario}`, { x: 119, y: 499, size: 12, font: timesFont });
+        page.drawText(`${cleanBody.programa}`, { x: 173, y: 478.5, size: 12, font: timesFont });
         page.drawText(`${nombres} ${apellidoP} ${apellidoM}`, { x: 112, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
-        page.drawText(`Fecha de elaboración: ${req.body.fechaElaboracion}`, { x: 800, y: 500, size: 11, font: timesFont });
-        page.drawText(`Periodo: ${req.body.periodo}`, { x: 800, y: 480, size: 11, font: timesFont });
+        page.drawText(`Fecha de elaboración: ${cleanBody.fechaElaboracion}`, { x: 800, y: 500, size: 11, font: timesFont });
+        page.drawText(`Periodo: ${cleanBody.periodo}`, { x: 800, y: 480, size: 11, font: timesFont });
 
         try {
             const form = pdfDoc.getForm();
@@ -519,4 +547,31 @@ app.post('/generate-reporte-global', async (req, res) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
+});
+
+// ¿Qué es un middleware en Express?
+// Un middleware es una función que se ejecuta antes de que la petición llegue a la ruta final o después de la respuesta.
+// Sirve para procesar, modificar o registrar información de la petición/respuesta.
+
+// Ejemplo: customLogger
+// Este middleware personalizado (ubicado en src/middlewares/customLogger.js) registra en consola cada petición HTTP recibida.
+// Se ejecuta para cada petición antes de llegar a tus rutas principales.
+
+const customLogger = require('./middlewares/customLogger');
+app.use(customLogger);
+
+// ¿Cómo funciona?
+// Cada vez que un usuario accede a tu servidor (por ejemplo, abre una página o envía un formulario),
+// customLogger imprime en consola la fecha, el método (GET, POST, etc.) y la URL solicitada.
+// Luego, llama a `next()` para que la petición siga su flujo normal y llegue a la ruta correspondiente.
+
+// Puedes crear más middlewares para validación, autenticación, manejo de errores, etc.
+// Solo debes exportarlos como funciones y agregarlos con app.use() o directamente en rutas específicas.
+
+// Manejo de errores CSRF
+app.use((err, req, res, next) => {
+    if (err.code === 'EBADCSRFTOKEN') {
+        return res.status(403).send('Token CSRF inválido o faltante.');
+    }
+    next(err);
 });
