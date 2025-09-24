@@ -244,6 +244,9 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
 });
 
 app.post('/generate-reporte-mensual', async (req, res) => {
+    // Sanitizar el cuerpo de la solicitud al inicio
+    const cleanBody = sanitizeBody(req.body);
+    
     // Leer la plantilla PDF desde la carpeta docs
     const pdfPath = path.join(__dirname, '../docs/reporte-mensual.pdf');
     const pdfBytes = fs.readFileSync(pdfPath);

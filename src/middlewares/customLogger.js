@@ -45,5 +45,4 @@ module.exports = function customLogger(req, res, next) {
     };
     
     next();
-};
-;
+};;
