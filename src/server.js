@@ -544,26 +544,11 @@ app.listen(PORT, () => {
     console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
 
-// ¿Qué es un middleware en Express?
-// Un middleware es una función que se ejecuta antes de que la petición llegue a la ruta final o después de la respuesta.
-// Sirve para procesar, modificar o registrar información de la petición/respuesta.
-
-// Ejemplo: customLogger
-// Este middleware personalizado (ubicado en src/middlewares/customLogger.js) registra en consola cada petición HTTP recibida.
-// Se ejecuta para cada petición antes de llegar a tus rutas principales.
 
 const customLogger = require('./middlewares/customLogger');
 app.use(customLogger);
 
-// ¿Cómo funciona?
-// Cada vez que un usuario accede a tu servidor (por ejemplo, abre una página o envía un formulario),
-// customLogger imprime en consola la fecha, el método (GET, POST, etc.) y la URL solicitada.
-// Luego, llama a `next()` para que la petición siga su flujo normal y llegue a la ruta correspondiente.
 
-// Puedes crear más middlewares para validación, autenticación, manejo de errores, etc.
-// Solo debes exportarlos como funciones y agregarlos con app.use() o directamente en rutas específicas.
-
-// Manejo de errores CSRF
 app.use((err, req, res, next) => {
     if (err.code === 'EBADCSRFTOKEN') {
         return res.status(403).send('Token CSRF inválido o faltante.');
