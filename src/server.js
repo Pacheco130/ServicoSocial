@@ -9,14 +9,14 @@ const upload = multer();
 const cors = require('cors');
 const csurf = require('csurf'); // CSRF protection
 const xss = require('xss');     // XSS sanitization
-const cookieParser = require('cookie-parser'); // <-- Agrega esto
+const cookieParser = require('cookie-parser'); 
 
 const app = express();
 app.use(cors());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser()); // <-- ya agregado
+app.use(cookieParser()); 
 
 
 const db = new sqlite3.Database(path.join(__dirname, '../database/servicio_social.db'), sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
@@ -36,18 +36,18 @@ db.run(`CREATE TABLE IF NOT EXISTS alumnos (
     NumR INTEGER
 )`);
 
-// Agregar antes de las rutas estáticas
+
 app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/favicon.ico'));
 });
 
-// Mueve la ruta raíz antes del middleware estático para que se sirva menu.html al entrar a localhost
+
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '../public/html/menu.html'));
 });
 app.use(express.static(path.join(__dirname, '../public')));
-app.use('/img', express.static(path.join(__dirname, '../public/img'))); // Agrega esta línea para servir las imágenes desde la carpeta "img"
-// Agrega una ruta estática para servir archivos desde la raíz (con precaución)
+app.use('/img', express.static(path.join(__dirname, '../public/img'))); 
+
 app.use(express.static(__dirname));
 
 const periodos = [
@@ -60,7 +60,7 @@ const periodos = [
     { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
 ];
 
-// Ejemplo de sanitización XSS para todos los datos recibidos en POST
+
 function sanitizeBody(body) {
     const sanitized = {};
     for (const key in body) {
@@ -82,11 +82,11 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
             boleta, 
             unidadAcademica, 
             carrera,
-            nombre,                // Nombre del Prestador
-            responsableNombre,     // Nombre del Responsable
-            responsableCargo       // Cargo del Responsable
+            nombre,                
+            responsableNombre,     
+            responsableCargo       
         } = cleanBody;
-        // Validar el número de reporte
+
         let numReporte = parseInt(reporteNo);
         console.log('Número de reporte recibido:', reporteNo, 'Interpretado como:', numReporte);
         if (isNaN(numReporte) || numReporte < 1 || numReporte > 7) {
@@ -115,7 +115,7 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         firstPage.drawText(`${responsableCargo}`, { x: 100, y: height - 740, size: 10, font: font, color: rgb(0,0,0) });
         
 
-        // Función robusta para convertir "16 de octubre de 2025" a "16/10/2025"
+        
         function fechaTextoADMY(fechaTexto) {
             const meses = {
                 'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 'mayo': '05', 'junio': '06',
@@ -128,15 +128,14 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
             const anio = partes[2];
             return `${dia}/${mes}/${anio}`;
         }
-        // Después de imprimir los datos principales, imprime los días hábiles
+        
         const inicioPeriodo = fechaTextoADMY(periodo.inicio);
         const finPeriodo = fechaTextoADMY(periodo.fin);
-        // Ajuste para crear fechas en formato YYYY-MM-DD
+        
         function getDiasHabiles(inicio, fin) {
             const mesesAbrev = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
             function textoADate(fecha) {
                 const [dia, mes, anio] = fecha.split('/');
-                // Usar Date.UTC para evitar desfase por zona horaria
                 return new Date(Date.UTC(anio, parseInt(mes)-1, dia));
             }
             const dias = [];
@@ -150,7 +149,6 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
                     const anio = fecha.getUTCFullYear();
                     dias.push(`${dia}/${mes}/${anio}`);
                 }
-                // Usar setUTCDate con copia para evitar mutar el objeto original
                 fecha = new Date(fecha.getTime() + 24*60*60*1000);
             }
             return dias;
@@ -186,10 +184,9 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
             firstPage.drawText(horasTexto, { x: 385, y: yDias, size: 10, font: font });
             yDias -= 18;
         });
-        // Imprimir suma total de horas en posición fija
         firstPage.drawText(`${sumaTexto}`, { x: 380, y: 165, size: 12, font: font, color: rgb(0,0,0) });
 
-        // Bloquear la edición aplanando el formulario (fusiona los campos interactivos si existen)
+       
         try {
             const form = pdfDoc.getForm();
             form.flatten();
@@ -219,7 +216,7 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         const firstPage = pdfDoc.getPages()[0];
         const { height } = firstPage.getSize();
 
-        // Imprime dos veces nombre y supervisor in posiciones diferentes
+        
         firstPage.drawText(`${nombre}`, { x: 188, y: height - 204, size: 12 });
         firstPage.drawText(`${boleta}`, { x: 178, y: height - 225, size: 12 });
         firstPage.drawText(`${carrera}`, { x: 188, y: height - 245, size: 12 });
@@ -228,12 +225,12 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         firstPage.drawText(`${nombre}`, { x: 80, y: height - 750, size: 12 });      // segunda vez nombre
         firstPage.drawText(`${supervisor}`, { x: 370, y: height - 750, size: 12 }); // segunda vez supervisor
 
-        // Bloquear la edición aplanando el formulario (fusiona los campos interactivos si existen)
+       
         try {
             const form = pdfDoc.getForm();
             form.flatten();
         } catch (error) {
-            // Si no hay formulario, simplemente ignora el error
+        
         }
 
         const pdfBytes = await pdfDoc.save();
@@ -249,19 +246,19 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
 });
 
 app.post('/generate-reporte-mensual', async (req, res) => {
-    // Sanitizar el cuerpo de la solicitud al inicio
+    
     const cleanBody = sanitizeBody(req.body);
     
-    // Leer la plantilla PDF desde la carpeta docs
+   
     const pdfPath = path.join(__dirname, '../docs/reporte-mensual.pdf');
     const pdfBytes = fs.readFileSync(pdfPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
 
-    // Registrar fontkit para fuentes personalizadas
+    
     const fontkit = require('fontkit');
     pdfDoc.registerFontkit(fontkit);
 
-    // Montserrat Variable para textos normales
+   
     const montserratFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Montserrat-VariableFont_wght.ttf'));
     const montserratFont = await pdfDoc.embedFont(montserratFontBytes);
 
