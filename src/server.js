@@ -43,7 +43,7 @@ app.get('/favicon.ico', (req, res) => {
 
 
 app.get('/', function(req, res) {
-    res.sendFile(path.join(__dirname, '../public/html/menu.html'));
+    res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/img', express.static(path.join(__dirname, '../public/img'))); 
