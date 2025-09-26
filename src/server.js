@@ -20,46 +20,41 @@ app.use(cookieParser());
 
 
 // Reemplazar la configuración de la base de datos
-const dbPath = path.join(__dirname, '../database/servicio_social.db');
+const isProduction = process.env.NODE_ENV === 'production';
+const dbPath = isProduction ? ':memory:' : path.join(__dirname, '../database/servicio_social.db');
 
-// Asegurarse de que el directorio de la base de datos existe
-const dbDir = path.dirname(dbPath);
-if (!fs.existsSync(dbDir)){
-    fs.mkdirSync(dbDir, { recursive: true });
+if (!isProduction) {
+    const dbDir = path.dirname(dbPath);
+    if (!fs.existsSync(dbDir)){
+        fs.mkdirSync(dbDir, { recursive: true });
+    }
 }
 
 let db;
 try {
-    db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+    db = new sqlite3.Database(dbPath, (err) => {
         if (err) {
             console.error('Error al abrir la base de datos:', err.message);
-            // Intentar crear la base de datos si no existe
-            db = new sqlite3.Database(dbPath, sqlite3.OPEN_CREATE, (createErr) => {
-                if (createErr) {
-                    console.error('Error al crear la base de datos:', createErr.message);
-                } else {
-                    console.log('Base de datos creada exitosamente');
-                }
-            });
+            process.exit(1);
         } else {
-            console.log('Conexión exitosa a la base de datos');
+            console.log(`Base de datos conectada en: ${isProduction ? 'memoria' : dbPath}`);
+            db.serialize(() => {
+                db.run(`CREATE TABLE IF NOT EXISTS alumnos (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    boleta TEXT,
+                    nombre TEXT,
+                    apellidoPaterno TEXT,
+                    apellidoMaterno TEXT,
+                    curp TEXT,
+                    semestre INTEGER,
+                    NumR INTEGER
+                )`);
+            });
         }
-    });
-
-    db.serialize(() => {
-        db.run(`CREATE TABLE IF NOT EXISTS alumnos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            boleta TEXT,
-            nombre TEXT,
-            apellidoPaterno TEXT,
-            apellidoMaterno TEXT,
-            curp TEXT,
-            semestre INTEGER,
-            NumR INTEGER
-        )`);
     });
 } catch (error) {
     console.error('Error crítico con la base de datos:', error);
+    process.exit(1);
 }
 
 // Manejar el cierre de la base de datos cuando se cierra la aplicación
