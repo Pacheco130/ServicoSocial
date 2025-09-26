@@ -250,7 +250,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     const cleanBody = sanitizeBody(req.body);
     
    
-    const pdfPath = path.join(__dirname, '../docs/reporte-mensual.pdf');
+    const pdfPath = path.join(__dirname, '../docs/reporte-mensual1.pdf');
     const pdfBytes = fs.readFileSync(pdfPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
 
