@@ -19,22 +19,60 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser()); 
 
 
-const db = new sqlite3.Database(path.join(__dirname, '../database/servicio_social.db'), sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
-    if (err) {
-        console.error('Error abriendo la base de datos:', err.message);
-    }
+// Reemplazar la configuración de la base de datos
+const dbPath = path.join(__dirname, '../database/servicio_social.db');
+
+// Asegurarse de que el directorio de la base de datos existe
+const dbDir = path.dirname(dbPath);
+if (!fs.existsSync(dbDir)){
+    fs.mkdirSync(dbDir, { recursive: true });
+}
+
+let db;
+try {
+    db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+        if (err) {
+            console.error('Error al abrir la base de datos:', err.message);
+            // Intentar crear la base de datos si no existe
+            db = new sqlite3.Database(dbPath, sqlite3.OPEN_CREATE, (createErr) => {
+                if (createErr) {
+                    console.error('Error al crear la base de datos:', createErr.message);
+                } else {
+                    console.log('Base de datos creada exitosamente');
+                }
+            });
+        } else {
+            console.log('Conexión exitosa a la base de datos');
+        }
+    });
+
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS alumnos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            boleta TEXT,
+            nombre TEXT,
+            apellidoPaterno TEXT,
+            apellidoMaterno TEXT,
+            curp TEXT,
+            semestre INTEGER,
+            NumR INTEGER
+        )`);
+    });
+} catch (error) {
+    console.error('Error crítico con la base de datos:', error);
+}
+
+// Manejar el cierre de la base de datos cuando se cierra la aplicación
+process.on('SIGINT', () => {
+    db.close((err) => {
+        if (err) {
+            console.error('Error al cerrar la base de datos:', err.message);
+        } else {
+            console.log('Conexión a la base de datos cerrada');
+        }
+        process.exit(0);
+    });
 });
-db.serialize(); 
-db.run(`CREATE TABLE IF NOT EXISTS alumnos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    boleta TEXT,
-    nombre TEXT,
-    apellidoPaterno TEXT,
-    apellidoMaterno TEXT,
-    curp TEXT,
-    semestre INTEGER,
-    NumR INTEGER
-)`);
 
 
 app.get('/favicon.ico', (req, res) => {
