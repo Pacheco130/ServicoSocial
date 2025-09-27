@@ -20,20 +20,43 @@ app.use(cookieParser());
 
 
 // Reemplazar la configuración de la base de datos
-const dbPath = path.join(__dirname, '../database/servicio_social.db');
+const isProduction = process.env.NODE_ENV === 'production';
+const dbPath = isProduction ? ':memory:' : path.join(__dirname, '../database/servicio_social.db');
 
-// Asegurarse de que el directorio existe
-if (!fs.existsSync(path.dirname(dbPath))) {
-    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+let db;
+try {
+    if (!isProduction && !fs.existsSync(path.dirname(dbPath))) {
+        fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+    }
+
+    db = new sqlite3.Database(dbPath, sqlite3.OPEN_READWRITE | sqlite3.OPEN_CREATE, (err) => {
+        if (err) {
+            console.error('Error al abrir la base de datos:', err.message);
+            process.exit(1);
+        }
+        console.log(`Base de datos conectada en: ${isProduction ? 'memoria' : dbPath}`);
+        
+        // Crear tabla si no existe
+        db.run(`CREATE TABLE IF NOT EXISTS alumnos (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            boleta TEXT,
+            nombre TEXT,
+            apellidoPaterno TEXT,
+            apellidoMaterno TEXT,
+            curp TEXT,
+            semestre INTEGER,
+            NumR INTEGER
+        )`, (err) => {
+            if (err) {
+                console.error('Error creando tabla:', err.message);
+            }
+        });
+    });
+} catch (error) {
+    console.error('Error crítico con la base de datos:', error);
+    process.exit(1);
 }
 
-const db = new sqlite3.Database(dbPath, (err) => {
-    if (err) {
-        console.error('Error al abrir la base de datos:', err.message);
-        process.exit(1);
-    }
-    console.log('Conectado a la base de datos SQLite');
-});
 
 // Manejar el cierre de la base de datos cuando se cierra la aplicación
 process.on('SIGINT', () => {
