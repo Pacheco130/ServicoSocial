@@ -20,42 +20,20 @@ app.use(cookieParser());
 
 
 // Reemplazar la configuración de la base de datos
-const isProduction = process.env.NODE_ENV === 'production';
-const dbPath = isProduction ? ':memory:' : path.join(__dirname, '../database/servicio_social.db');
+const dbPath = path.join(__dirname, '../database/servicio_social.db');
 
-if (!isProduction) {
-    const dbDir = path.dirname(dbPath);
-    if (!fs.existsSync(dbDir)){
-        fs.mkdirSync(dbDir, { recursive: true });
+// Asegurarse de que el directorio existe
+if (!fs.existsSync(path.dirname(dbPath))) {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true });
+}
+
+const db = new sqlite3.Database(dbPath, (err) => {
+    if (err) {
+        console.error('Error al abrir la base de datos:', err.message);
+        process.exit(1);
     }
-}
-
-let db;
-try {
-    db = new sqlite3.Database(dbPath, (err) => {
-        if (err) {
-            console.error('Error al abrir la base de datos:', err.message);
-            process.exit(1);
-        } else {
-            console.log(`Base de datos conectada en: ${isProduction ? 'memoria' : dbPath}`);
-            db.serialize(() => {
-                db.run(`CREATE TABLE IF NOT EXISTS alumnos (
-                    id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    boleta TEXT,
-                    nombre TEXT,
-                    apellidoPaterno TEXT,
-                    apellidoMaterno TEXT,
-                    curp TEXT,
-                    semestre INTEGER,
-                    NumR INTEGER
-                )`);
-            });
-        }
-    });
-} catch (error) {
-    console.error('Error crítico con la base de datos:', error);
-    process.exit(1);
-}
+    console.log('Conectado a la base de datos SQLite');
+});
 
 // Manejar el cierre de la base de datos cuando se cierra la aplicación
 process.on('SIGINT', () => {
@@ -477,38 +455,22 @@ app.post('/generate-reporte-mensual', async (req, res) => {
 
 app.post('/registrar-alumno', upload.none(), (req, res) => {
     const cleanBody = sanitizeBody(req.body);
-    console.log('Datos recibidos:', cleanBody); // Depuración
     const { boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestre, NumR } = cleanBody;
-    // Validación básica
+
     if (!boleta || !nombre || !apellidoPaterno || !apellidoMaterno || !curp || !semestre || !NumR) {
         return res.status(400).send('Todos los campos son obligatorios');
     }
-    const semestreNum = parseInt(semestre);
-    const numRNum = parseInt(NumR);
-    if (isNaN(semestreNum) || isNaN(numRNum)) {
-        return res.status(400).send('Semestre y Número de registro deben ser numéricos');
-    }
-    db.get(
-        `SELECT * FROM alumnos WHERE Boleta = ? AND Nombre = ? AND apellidoPaterno = ? AND apellidoMaterno = ? AND curp = ? AND Semestre = ? AND NumR = ?`,
-        [boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestreNum, numRNum],
-        (err, row) => {
+
+    db.run(
+        `INSERT INTO alumnos (Boleta, Nombre, apellidoPaterno, apellidoMaterno, curp, Semestre, NumR) 
+         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestre, NumR],
+        function(err) {
             if (err) {
-                return res.status(500).send('Error al consultar alumno');
+                console.error('Error al registrar alumno:', err);
+                return res.status(500).send('Error al registrar alumno: ' + err.message);
             }
-            if (row) {
-                return res.send('Este alumno ya está registrado');
-            }
-            db.run(
-                `INSERT INTO alumnos (Boleta, Nombre, apellidoPaterno, apellidoMaterno, curp, Semestre, NumR) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-                [boleta, nombre, apellidoPaterno, apellidoMaterno, curp, semestreNum, numRNum],
-                function (err) {
-                    if (err) {
-                        console.error('Error SQLite:', err.message);
-                        return res.status(500).send('Error al registrar alumno: ' + err.message);
-                    }
-                    res.send('Alumno registrado correctamente');
-                }
-            );
+            res.send('Alumno registrado correctamente');
         }
     );
 });
