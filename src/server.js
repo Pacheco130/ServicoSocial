@@ -630,8 +630,8 @@ if (process.env.NODE_ENV === 'production') {
     // Servir archivos estáticos de React
     app.use(express.static(path.join(__dirname, '../client/build')));
     
-    // Cambia '/*' por '*' aquí:
-    app.get('*', (req, res) => {
+    // Cambia la ruta comodín por una expresión regular:
+    app.get(/.*/, (req, res) => {
         res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
     });
 } else {
