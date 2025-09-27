@@ -84,6 +84,20 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/html', express.static(path.join(__dirname, '../public/html')));
 app.use('/img', express.static(path.join(__dirname, '../public/img'))); 
 
+// Modificar la configuración de rutas estáticas
+app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use('/docs', express.static(path.join(__dirname, '../docs')));
+app.use('/fonts', express.static(path.join(__dirname, '../fonts')));
+
+// Agregar manejo de errores para archivos
+app.use((err, req, res, next) => {
+    if (err.code === 'ENOENT') {
+        console.error('Error de archivo no encontrado:', err.path);
+        return res.status(404).send('Archivo no encontrado');
+    }
+    next(err);
+});
+
 // Agregar encabezados de seguridad
 app.use((req, res, next) => {
     res.setHeader(
@@ -119,6 +133,18 @@ function sanitizeBody(body) {
     return sanitized;
 }
 
+
+// Función auxiliar para verificar la existencia de archivos
+function checkFile(filePath) {
+    try {
+        return fs.existsSync(filePath);
+    } catch (err) {
+        console.error('Error verificando archivo:', err);
+        return false;
+    }
+}
+
+// Modificar la función de generación de PDF para incluir verificación
 app.post('/generate-pdf', upload.none(), async (req, res) => {
     try {
         const cleanBody = sanitizeBody(req.body);
@@ -140,6 +166,9 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         }
         const periodo = periodos[numReporte - 1];
         const templatePath = path.join(__dirname, '../docs/control-asis.pdf');
+        if (!checkFile(templatePath)) {
+            throw new Error('Plantilla PDF no encontrada');
+        }
         const templateBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(templateBytes);
         const firstPage = pdfDoc.getPages()[0];
@@ -248,7 +277,7 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         res.send(pdfBytes);
     } catch (error) {
         console.error('Error generando PDF:', error);
-        res.status(500).send('Error generando PDF');
+        res.status(500).send('Error generando PDF: ' + error.message);
     }
 });
 
@@ -257,6 +286,9 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         const cleanBody = sanitizeBody(req.body);
         const { nombre, boleta, carrera, grupo, supervisor } = cleanBody;
         const templatePath = path.join(__dirname, '../docs/carta-aceptacion.pdf');
+        if (!checkFile(templatePath)) {
+            throw new Error('Plantilla de carta de aceptación no encontrada');
+        }
         const templateBytes = fs.readFileSync(templatePath);
         const pdfDoc = await PDFDocument.load(templateBytes);
         const firstPage = pdfDoc.getPages()[0];
