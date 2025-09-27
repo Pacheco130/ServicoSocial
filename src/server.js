@@ -639,3 +639,8 @@ if (process.env.NODE_ENV === 'production') {
         res.send('Server running in development mode');
     });
 }
+
+// Ruta explícita para menu.html
+app.get('/html/menu.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/html/menu.html'));
+});
