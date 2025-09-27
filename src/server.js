@@ -75,14 +75,26 @@ app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/favicon.ico'));
 });
 
-
 app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
+
+// Modificar las rutas estáticas para incluir la carpeta html
 app.use(express.static(path.join(__dirname, '../public')));
+app.use('/html', express.static(path.join(__dirname, '../public/html')));
 app.use('/img', express.static(path.join(__dirname, '../public/img'))); 
 
-app.use(express.static(__dirname));
+// Agregar encabezados de seguridad
+app.use((req, res, next) => {
+    res.setHeader(
+        'Content-Security-Policy',
+        "default-src 'self'; " +
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+        "style-src 'self' 'unsafe-inline'; " +
+        "font-src 'self' data:;"
+    );
+    next();
+});
 
 const periodos = [
     { inicio: "16 de octubre de 2025", fin: "15 de noviembre de 2025" },
