@@ -79,15 +79,17 @@ app.get('/', function(req, res) {
     res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
-// Modificar las rutas estáticas para incluir la carpeta html
+// Rutas estáticas (solo una vez cada una)
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/html', express.static(path.join(__dirname, '../public/html')));
-app.use('/img', express.static(path.join(__dirname, '../public/img'))); 
-
-// Modificar la configuración de rutas estáticas
-app.use('/public', express.static(path.join(__dirname, '../public')));
+app.use('/img', express.static(path.join(__dirname, '../public/img')));
 app.use('/docs', express.static(path.join(__dirname, '../docs')));
 app.use('/fonts', express.static(path.join(__dirname, '../fonts')));
+
+// Ruta explícita para menu.html (opcional, pero útil si el catch-all de React está activo)
+app.get('/html/menu.html', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/html/menu.html'));
+});
 
 // Agregar manejo de errores para archivos
 app.use((err, req, res, next) => {
@@ -627,10 +629,7 @@ app.use('/api', alumnoRoutes);
 
 // Modificar la configuración de rutas estáticas (reemplazar las existentes)
 if (process.env.NODE_ENV === 'production') {
-    // Servir archivos estáticos de React
     app.use(express.static(path.join(__dirname, '../client/build')));
-    
-    // Cambia la ruta comodín por una expresión regular:
     app.get(/.*/, (req, res) => {
         res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
     });
@@ -639,8 +638,3 @@ if (process.env.NODE_ENV === 'production') {
         res.send('Server running in development mode');
     });
 }
-
-// Ruta explícita para menu.html
-app.get('/html/menu.html', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/html/menu.html'));
-});
