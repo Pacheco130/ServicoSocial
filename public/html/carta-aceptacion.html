@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Carta de Aceptación - IPN</title>
     <link rel="stylesheet" href="../css/style.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <header>
@@ -37,8 +38,19 @@
             <label for="supervisor">Supervisor:</label>
             <input type="text" id="supervisor" name="supervisor" required>
         </div>
+        <!-- Widget reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
         <button type="submit">Descargar Carta</button>
     </form>
+    <script>
+document.getElementById('aceptacionForm').addEventListener('submit', function(e) {
+    var recaptchaResponse = grecaptcha.getResponse();
+    if (!recaptchaResponse) {
+        alert('Por favor verifica que no eres un robot.');
+        e.preventDefault();
+    }
+});
+</script>
     <script src="../js/script.js"></script>
 </body>
 </html>

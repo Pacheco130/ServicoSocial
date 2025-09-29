@@ -58,7 +58,7 @@
         <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
     </header>
     <div class="form-container">
-        <form id="reporteForm" method="POST" action="/generate-reporte-mensual">
+        <form id="reporteMensualForm" method="POST" action="/generate-reporte-mensual">
             <div id="fase1">
                 <div class="form-flex">
                     <div class="form-col">
@@ -148,11 +148,23 @@
                         <input type="text" name="actividad7" id="actividad7" placeholder="Actividad 7" required>
                     </div>
                 </div>
-                <button type="submit">Descargar Reporte</button>
+                <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
+                <button type="submit">Descargar Reporte Mensual</button>
             </div>
         </form>
     </div>
     <script src="/js/reporte-mensual.js"></script>
     <script src="/js/script.js"></script>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <script>
+    document.getElementById('reporteMensualForm').addEventListener('submit', function(e) {
+        var recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+            alert('Por favor verifica que no eres un robot.');
+            e.preventDefault();
+        }
+        // ...puedes agregar aquí tu lógica adicional...
+    });
+    </script>
 </body>
 </html>

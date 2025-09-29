@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Reporte Global</title>
     <link rel="stylesheet" href="/css/reporte-mensual.css">
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body>
     <header>
@@ -81,10 +82,21 @@
                     </div>
                 </div>
             </div>
+            <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
             <button type="submit">Descargar Reporte Global</button>
         </form>
     </div>
     <script src="/js/reporte-global.js"></script>
+    <script>
+    document.getElementById('reporteGlobalForm').addEventListener('submit', function(e) {
+        var recaptchaResponse = grecaptcha.getResponse();
+        if (!recaptchaResponse) {
+            alert('Por favor verifica que no eres un robot.');
+            e.preventDefault();
+        }
+        // ...puedes agregar aquí tu lógica adicional...
+    });
+    </script>
 </body>
 </html>
 

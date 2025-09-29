@@ -188,7 +188,7 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         firstPage.drawText(`${boleta}`, { x: 466, y: height - 134, size: 10 });
         firstPage.drawText(`${unidadAcademica}`, { x: 122, y: height - 151, size: 10 });
         firstPage.drawText(`${carrera}`, { x: 344, y: height - 151, size: 10 });
-        firstPage.drawText(`${responsableNombre}`, { x: 85, y: height - 730, size: 10, font: font, color: rgb(0,0,0) });
+        firstPage.drawText(`${responsableNombre}`, { x: 70, y: height - 730, size: 10, font: font, color: rgb(0,0,0) });
         firstPage.drawText(`${responsableCargo}`, { x: 100, y: height - 740, size: 10, font: font, color: rgb(0,0,0) });
         
 
@@ -374,10 +374,10 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     const periodo = periodos[nreporte - 1];
     // N. Reporte con Montserrat Bold, tamaño 14
     page.drawText(`${req.body.nreporte}`, {
-        x: 385,
-        y: 670,
+        x: 388,
+        y: 667,
         size: 14,
-        font: montserratBold,
+        font: montserratFont,
         color: rgb(0, 0, 0)
     });
     // Fecha en formato completo, Montserrat Light, tamaño 11
@@ -385,7 +385,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         x: 346,
         y: 696,
         size: 11,
-        font: montserratLight,
+        font: montserratFont,
         color: rgb(0, 0, 0)
     });
     // Periodo con fechas fijas según el número de reporte
@@ -489,21 +489,21 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         x: 400,
         y: 190,
         size: 10,
-        font: montserratLight,
+        font: montserratFont,
         color: rgb(0, 0, 0)
     });
     page.drawText(`${req.body.cargo}`, { 
         x: 430, 
         y: 180,
         size: 10,
-        font: montserratLight,
+        font: montserratFont,
         color: rgb(0, 0, 0)
      });
     page.drawText(`${req.body.nombreA}`, {
         x: 90,
         y: 190,
         size: 10,
-        font: montserratLight,
+        font: montserratFont,
         color: rgb(0, 0, 0)
     });
 

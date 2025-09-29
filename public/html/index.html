@@ -20,6 +20,7 @@
             z-index: 9999;
         }
     </style>
+    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </head>
 <body> 
     <header>
@@ -91,6 +92,7 @@
             <input type="time" id="horaSalida" name="horaSalida" required disabled readonly>
         </div>
         
+        <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
         <button type="submit">Descargar</button>
     </form>
     <div id="mensaje-flotante">Descargando PDF...</div>
@@ -129,6 +131,12 @@
             }
         });
         document.getElementById('pdfForm').addEventListener('submit', function(e) {
+            var recaptchaResponse = grecaptcha.getResponse();
+            if (!recaptchaResponse) {
+                alert('Por favor verifica que no eres un robot.');
+                e.preventDefault();
+                return;
+            }
             const reporteNo = document.getElementById('reporteNo').value;
             // Mostrar mensaje flotante
             const mensaje = document.getElementById('mensaje-flotante');

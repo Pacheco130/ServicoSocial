@@ -4,6 +4,7 @@ const path = require('path');
 const xss = require('xss');
 const PDFKit = require('pdfkit');
 const sharp = require('sharp');
+const axios = require('axios'); // Agregar axios para la solicitud a reCAPTCHA
 
 const periodos = [
     { inicio: "16 de octubre de 2025", fin: "15 de noviembre de 2025" },
@@ -40,8 +41,30 @@ const optimizeImage = (imagePath) => {
     });
 };
 
+// Función para verificar reCAPTCHA
+async function verifyRecaptcha(token) {
+    const secret = process.env.RECAPTCHA_SECRET; // Debe estar en variables de entorno
+    const url = `https://www.google.com/recaptcha/api/siteverify`;
+    const params = new URLSearchParams();
+    params.append('secret', secret);
+    params.append('response', token);
+
+    try {
+        const response = await axios.post(url, params);
+        return response.data.success;
+    } catch (err) {
+        console.error('Error verificando reCAPTCHA:', err);
+        return false;
+    }
+}
+
 exports.generatePdf = async (req, res) => {
     try {
+        // Verificar reCAPTCHA antes de continuar
+        const recaptchaToken = req.body.recaptchaToken;
+        if (!recaptchaToken || !(await verifyRecaptcha(recaptchaToken))) {
+            return res.status(403).send('Verificación reCAPTCHA fallida');
+        }
         // ...existing generatePdf logic from /generate-pdf route...
     } catch (error) {
         console.error('Error generando PDF:', error);
@@ -51,6 +74,11 @@ exports.generatePdf = async (req, res) => {
 
 exports.generateCartaAceptacion = async (req, res) => {
     try {
+        // Verificar reCAPTCHA antes de continuar
+        const recaptchaToken = req.body.recaptchaToken;
+        if (!recaptchaToken || !(await verifyRecaptcha(recaptchaToken))) {
+            return res.status(403).send('Verificación reCAPTCHA fallida');
+        }
         // ...existing generateCartaAceptacion logic from /generate-carta-aceptacion route...
     } catch (error) {
         console.error('Error generando carta de aceptación:', error);
@@ -60,6 +88,11 @@ exports.generateCartaAceptacion = async (req, res) => {
 
 exports.generateReporteMensual = async (req, res) => {
     try {
+        // Verificar reCAPTCHA antes de continuar
+        const recaptchaToken = req.body.recaptchaToken;
+        if (!recaptchaToken || !(await verifyRecaptcha(recaptchaToken))) {
+            return res.status(403).send('Verificación reCAPTCHA fallida');
+        }
         const pdfOptions = {
             compress: true,
             info: {
@@ -107,6 +140,11 @@ exports.generateReporteMensual = async (req, res) => {
 
 exports.generateReporteGlobal = async (req, res) => {
     try {
+        // Verificar reCAPTCHA antes de continuar
+        const recaptchaToken = req.body.recaptchaToken;
+        if (!recaptchaToken || !(await verifyRecaptcha(recaptchaToken))) {
+            return res.status(403).send('Verificación reCAPTCHA fallida');
+        }
         // ...existing generateReporteGlobal logic from /generate-reporte-global route...
     } catch (error) {
         console.error('Error generando reporte global:', error);
