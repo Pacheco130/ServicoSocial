@@ -61,7 +61,41 @@
         .button:hover {
             transform: scale(1.05);
         }
+        .button[disabled] {
+            background-color: #bbb;
+            cursor: not-allowed;
+        }
+        .modal-backdrop {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.45);
+            display: flex; align-items: center; justify-content: center;
+        }
+        .modal {
+            background: #fff; padding: 25px 30px; border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2); width: 100%; max-width: 360px;
+        }
+        .modal h3 { margin-top: 0; color: #742844; }
+        .modal input {
+            width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px;
+            margin: 10px 0 15px;
+        }
+        .modal .actions { display: flex; gap: 10px; }
+        .modal .actions button {
+            flex: 1; padding: 10px; border: none; border-radius: 5px; cursor: pointer;
+        }
+        .modal .actions button.confirm { background: #742844; color: #fff; }
+        .modal .actions button.cancel { background: #ccc; color: #333; }
+        .modal .error { color: red; margin: 0; min-height: 18px; }
+        .modal.shake { animation: shake 0.45s ease; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-10px); }
+            40%, 80% { transform: translateX(10px); }
+        }
+        .fallback-note { font-size: 14px; color: #555; margin-top: 10px; text-align: center; }
     </style>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
 </head>
 <body>
     <header>
@@ -70,9 +104,16 @@
         <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
     </header>
 
-    <div class="button-container">
-        <button class="button alumno" onclick="window.location.href='/html/Menu.html'">Alumnos</button>
-        <button class="button admin" onclick="window.location.href='/admin'">Administrador</button>
+    <div id="app-root">
+        <div class="button-container">
+            <button class="button alumno" type="button" onclick="window.location.href='/html/Menu.html'">
+                Alumnos
+            </button>
+            <button class="button admin" type="button" onclick="window.location.href='/html/controlA.html'">
+                Administrador
+            </button>
+        </div>
     </div>
+    <script type="text/babel" data-presets="env,react" src="/react/adminAccess.jsx"></script>
 </body>
 </html>

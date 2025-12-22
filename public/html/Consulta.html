@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consulta de Alumno</title>
+    <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f0f0f0; display: flex; justify-content: center; padding-top: 50px; }
+        .layout { width: 100%; max-width: 480px; }
+        .fallback {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            color: #742844;
+        }
+        .fallback h2 { margin: 0 0 15px 0; font-size: 24px; }
+        .fallback label { display: block; margin: 0 0 5px 0; text-align: left; }
+        .fallback input,
+        .fallback button {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .fallback button {
+            background-color: #742844;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .fallback button:disabled { background-color: #ccc; cursor: not-allowed; }
+        .resultado { margin-top: 20px; text-align: left; color: #333; }
+    </style>
+</head>
+<body>
+    <main class="layout">
+        <section class="fallback">
+            <h2>Consultar Alumno</h2>
+            <form id="consulta-form">
+                <label for="boleta">Boleta</label>
+                <input id="boleta" name="boleta" type="text" placeholder="Ingresa la Boleta" list="boletas" required>
+                <datalist id="boletas"></datalist>
+                <button type="submit">Buscar</button>
+            </form>
+            <p id="mensaje"></p>
+            <div id="resultado" class="resultado" hidden>
+                <p><strong>ID:</strong> <span data-field="Id"></span></p>
+                <p><strong>Boleta:</strong> <span data-field="Boleta"></span></p>
+                <p><strong>Nombre:</strong> <span data-field="Nombre"></span></p>
+                <p><strong>CURP:</strong> <span data-field="curp"></span></p>
+                <p><strong>Semestre:</strong> <span data-field="Semestre"></span></p>
+                <p><strong>NumR:</strong> <span data-field="NumR"></span></p>
+            </div>
+            <a href="controlA.html" style="display:block;margin-top:20px;text-decoration:none;color:#333;">Volver al Panel</a>
+        </section>
+    </main>
+    <script>
+        (function () {
+            const form = document.getElementById('consulta-form');
+            const boletaInput = document.getElementById('boleta');
+            const datalist = document.getElementById('boletas');
+            const mensaje = document.getElementById('mensaje');
+            const resultado = document.getElementById('resultado');
+            const campos = resultado.querySelectorAll('[data-field]');
+
+            const mostrarMensaje = (texto, esError = false) => {
+                mensaje.textContent = texto;
+                mensaje.style.color = esError ? 'red' : '#333';
+            };
+
+            const limpiarResultado = () => {
+                resultado.hidden = true;
+                campos.forEach(span => span.textContent = '');
+            };
+
+            const cargarBoletas = async () => {
+                try {
+                    const resp = await fetch('/api/alumnos/boletas');
+                    const { data, error } = await resp.json();
+                    if (error) {
+                        mostrarMensaje('No se pudieron cargar las boletas.', true);
+                        return;
+                    }
+                    (data || []).forEach(({ Boleta }) => {
+                        const option = document.createElement('option');
+                        option.value = Boleta;
+                        datalist.appendChild(option);
+                    });
+                } catch {
+                    mostrarMensaje('Error al cargar las boletas.', true);
+                }
+            };
+
+            form.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const boleta = boletaInput.value.trim();
+                if (!boleta) return;
+
+                mostrarMensaje('Buscando...');
+                limpiarResultado();
+
+                try {
+                    const resp = await fetch(`/api/alumno/${encodeURIComponent(boleta)}`);
+                    const { data, error } = await resp.json();
+
+                    if (error) {
+                        mostrarMensaje('Error al realizar la consulta.', true);
+                        return;
+                    }
+                    if (!data) {
+                        mostrarMensaje('Alumno no encontrado.', true);
+                        return;
+                    }
+
+                    campos.forEach(span => {
+                        const campo = span.getAttribute('data-field');
+                        if (campo === 'Nombre') {
+                            span.textContent = `${data.Nombre || ''} ${data.apellidoPaterno || ''} ${data.apellidoMaterno || ''}`.trim();
+                        } else {
+                            span.textContent = data[campo] ?? '';
+                        }
+                    });
+
+                    resultado.hidden = false;
+                    mostrarMensaje('Consulta completada.');
+                } catch {
+                    mostrarMensaje('No fue posible conectar con el servidor.', true);
+                }
+            });
+
+            cargarBoletas();
+        }());
+    </script>
+</body>
+</html>

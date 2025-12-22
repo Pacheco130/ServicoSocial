@@ -85,6 +85,7 @@ app.use('/html', express.static(path.join(__dirname, '../public/html')));
 app.use('/img', express.static(path.join(__dirname, '../public/img')));
 app.use('/docs', express.static(path.join(__dirname, '../docs')));
 app.use('/fonts', express.static(path.join(__dirname, '../fonts')));
+app.use('/react', express.static(path.join(__dirname, '../public/react')));
 
 // Ruta explícita para menu.html (opcional, pero útil si el catch-all de React está activo)
 app.get('/html/menu.html', (req, res) => {
@@ -104,10 +105,7 @@ app.use((err, req, res, next) => {
 app.use((req, res, next) => {
     res.setHeader(
         'Content-Security-Policy',
-        "default-src 'self'; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-        "style-src 'self' 'unsafe-inline'; " +
-        "font-src 'self' data:;"
+        "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://unpkg.com; style-src 'self' 'unsafe-inline'; font-src 'self' data:;"
     );
     next();
 });
@@ -638,3 +636,25 @@ if (process.env.NODE_ENV === 'production') {
         res.send('Server running in development mode');
     });
 }
+
+app.get('/api/alumno/:boleta', (req, res) => {
+    const sql = 'SELECT * FROM alumnos WHERE Boleta = ?';
+    db.get(sql, [req.params.boleta], (err, row) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ data: row || null });
+    });
+});
+
+app.get('/api/alumnos/boletas', (req, res) => {
+    const sql = 'SELECT Boleta FROM alumnos ORDER BY Boleta ASC';
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json({ data: rows });
+    });
+});

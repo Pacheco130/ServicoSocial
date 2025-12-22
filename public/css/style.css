@@ -6,17 +6,30 @@ body {
     padding: 20px;
     color: #444;
 }
-
+#mensaje-flotante {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #742844;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 18px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 9999;
+        }
 h1 {
     text-align: center;
     color: #742844;
     font-size: 2em;
     margin-bottom: 20px;
-    text-shadow: 0 0 10px #fff, 0 0 20px #74284488; /* resplandor blanco y color IPN */
+    text-shadow: 0 0 10px #fff, 0 0 20px #74284488; 
 }
 
 form {
-    max-width: 600px; /* Aumentamos ligeramente el ancho para aprovechar el espacio horizontal */
+    max-width: 600px; 
     margin: 30px auto;
     padding: 20px;
     background-color: #fff;
@@ -24,7 +37,7 @@ form {
     border-radius: 8px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
     display: grid;
-    grid-template-columns: 1fr 1fr; /* Dos columnas iguales */
+    grid-template-columns: 1fr 1fr; 
     gap: 15px;
 }
 

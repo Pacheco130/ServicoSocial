@@ -6,7 +6,25 @@ body {
     padding: 0;
     color: #444;
 }
-
+ h1 {
+            text-shadow: 0 0 10px #fff, 0 0 20px #74284488;
+        }
+        .corner-image {
+            position: absolute;
+            top: 10px;
+            height: 150px;
+            filter: drop-shadow(0 0 12px #fff) drop-shadow(0 0 8px #74284488);
+        }
+        .corner-image.left {
+            left: 10px;
+        }
+        .corner-image.right {
+            right: 10px;
+        }
+        header {
+            position: relative;
+            height: 80px;
+        }
 nav {
     position: absolute;
     top: 50%;
