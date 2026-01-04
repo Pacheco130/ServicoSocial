@@ -61,6 +61,10 @@
         .button:hover {
             transform: scale(1.05);
         }
+        .button-container.fallback-buttons .button {
+            opacity: 0.6;
+            pointer-events: none;
+        }
         .button[disabled] {
             background-color: #bbb;
             cursor: not-allowed;
@@ -95,7 +99,7 @@
     </style>
     <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
-    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script defer src="/react/adminAccess.jsx"></script>
 </head>
 <body>
     <header>
@@ -104,16 +108,6 @@
         <img src="/img/IPN.png" alt="Logo Derecho" class="corner-image right">
     </header>
 
-    <div id="app-root">
-        <div class="button-container">
-            <button class="button alumno" type="button" onclick="window.location.href='/html/Menu.html'">
-                Alumnos
-            </button>
-            <button class="button admin" type="button" onclick="window.location.href='/html/controlA.html'">
-                Administrador
-            </button>
-        </div>
-    </div>
-    <script type="text/babel" data-presets="env,react" src="/react/adminAccess.jsx"></script>
+    <div id="app-root"></div>
 </body>
 </html>
