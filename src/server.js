@@ -21,11 +21,12 @@ app.use(cookieParser());
 
 // Reemplazar la configuración de la base de datos
 const isProduction = process.env.NODE_ENV === 'production';
-const dbPath = isProduction ? ':memory:' : path.join(__dirname, '../database/servicio_social.db');
+const defaultDbPath = path.join(__dirname, '../database/servicio_social.db');
+const dbPath = process.env.DATABASE_PATH || defaultDbPath;
 
 let db;
 try {
-    if (!isProduction && !fs.existsSync(path.dirname(dbPath))) {
+    if (dbPath !== ':memory:' && !fs.existsSync(path.dirname(dbPath))) {
         fs.mkdirSync(path.dirname(dbPath), { recursive: true });
     }
 
@@ -34,7 +35,7 @@ try {
             console.error('Error al abrir la base de datos:', err.message);
             process.exit(1);
         }
-        console.log(`Base de datos conectada en: ${isProduction ? 'memoria' : dbPath}`);
+        console.log(`Base de datos conectada en: ${dbPath === ':memory:' ? 'memoria' : dbPath}`);
         
         // Crear tabla si no existe
         db.run(`CREATE TABLE IF NOT EXISTS alumnos (
@@ -644,7 +645,21 @@ app.get('/api/alumno/:boleta', (req, res) => {
             res.status(500).json({ error: err.message });
             return;
         }
-        res.json({ data: row || null });
+        if (!row) {
+            res.json({ data: null });
+            return;
+        }
+        const data = {
+            Id: row.Id ?? row.id ?? null,
+            Boleta: row.Boleta ?? row.boleta ?? '',
+            Nombre: row.Nombre ?? row.nombre ?? '',
+            apellidoPaterno: row.apellidoPaterno ?? row.ApellidoPaterno ?? '',
+            apellidoMaterno: row.apellidoMaterno ?? row.ApellidoMaterno ?? '',
+            curp: row.curp ?? row.Curp ?? '',
+            Semestre: row.Semestre ?? row.semestre ?? null,
+            NumR: row.NumR ?? row.numR ?? row.numr ?? null
+        };
+        res.json({ data });
     });
 });
 
