@@ -44,7 +44,7 @@
         
         <div class="form-group">
             <label for="unidadAcademica">Unidad Académica:</label>
-            <input type="text" id="unidadAcademica" name="unidadAcademica" required>
+            <input type="text" id="unidadAcademica" name="unidadAcademica" value="CECyT 19 LV" readonly>
         </div>
         
         <div class="form-group">
@@ -68,12 +68,12 @@
         </div>
         
         <div class="form-group">
-            <label for="horaEntrada">Hora de entrada:</label>
-            <input type="time" id="horaEntrada" name="horaEntrada" required>
+            <label for="periodoInicio">Fecha de inicio:</label>
+            <input type="date" id="periodoInicio" name="periodoInicio" required>
         </div>
         <div class="form-group">
-            <label for="horaSalida">Hora de salida:</label>
-            <input type="time" id="horaSalida" name="horaSalida" required disabled readonly>
+            <label for="periodoFin">Fecha de fin:</label>
+            <input type="date" id="periodoFin" name="periodoFin" required>
         </div>
         
         <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
@@ -82,38 +82,6 @@
     <div id="mensaje-flotante">Descargando PDF...</div>
     <script src="../js/script.js"></script>
     <script>
-        const horaEntrada = document.getElementById('horaEntrada');
-        const horaSalida = document.getElementById('horaSalida');
-        horaEntrada.addEventListener('change', function() {
-            if (horaEntrada.value) {
-                horaSalida.disabled = false;
-                horaSalida.readOnly = true;
-                horaSalida.min = horaEntrada.value;
-                // Calcular máximo permitido (4 horas después)
-                let [h, m] = horaEntrada.value.split(':').map(Number);
-                let salidaH = h + 4;
-                if (salidaH > 23) salidaH = 23;
-                const salidaAuto = salidaH.toString().padStart(2, '0') + ':' + m.toString().padStart(2, '0');
-                horaSalida.value = salidaAuto;
-                horaSalida.max = salidaAuto;
-            } else {
-                horaSalida.value = '';
-                horaSalida.disabled = true;
-                horaSalida.readOnly = false;
-            }
-        });
-        horaSalida.addEventListener('input', function() {
-            if (horaEntrada.value && horaSalida.value) {
-                // Validar que no exceda 4 horas
-                let [h1, m1] = horaEntrada.value.split(':').map(Number);
-                let [h2, m2] = horaSalida.value.split(':').map(Number);
-                let diff = (h2*60 + m2) - (h1*60 + m1);
-                if (diff > 240) {
-                    alert('La diferencia no puede ser mayor a 4 horas');
-                    horaSalida.value = '';
-                }
-            }
-        });
         document.getElementById('pdfForm').addEventListener('submit', function(e) {
             var recaptchaResponse = grecaptcha.getResponse();
             if (!recaptchaResponse) {
@@ -121,11 +89,18 @@
                 e.preventDefault();
                 return;
             }
-            const reporteNo = document.getElementById('reporteNo').value;
-            // Mostrar mensaje flotante
             const mensaje = document.getElementById('mensaje-flotante');
             mensaje.style.display = 'block';
             setTimeout(() => { mensaje.style.display = 'none'; }, 3000);
+        });
+        
+        const periodoInicio = document.getElementById('periodoInicio');
+        const periodoFin = document.getElementById('periodoFin');
+        periodoInicio.addEventListener('change', () => {
+            periodoFin.min = periodoInicio.value || '';
+            if (periodoFin.value && periodoFin.value < periodoInicio.value) {
+                periodoFin.value = periodoInicio.value;
+            }
         });
     </script>
 </body>

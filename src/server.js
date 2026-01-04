@@ -145,6 +145,36 @@ function checkFile(filePath) {
     }
 }
 
+// Función para eliminar formularios y widgets residuales de un PDF
+async function stripPdfForms(pdfDoc) {
+    try {
+        const form = pdfDoc.getForm();
+        if (form && typeof form.flatten === 'function') {
+            form.flatten();
+        }
+    } catch (_) {}
+    try {
+        const cleanDoc = await PDFDocument.create();
+        const indices = Array.from({ length: pdfDoc.getPageCount() }, (_, idx) => idx);
+        const copiedPages = await cleanDoc.copyPages(pdfDoc, indices);
+        copiedPages.forEach(page => cleanDoc.addPage(page));
+        return cleanDoc;
+    } catch (error) {
+        console.warn('No se pudieron clonar las páginas sin formulario:', error);
+        return pdfDoc;
+    }
+}
+
+// Helper para centrar texto horizontalmente
+function drawCenteredText(page, text, font, size, centerX, y, options = {}) {
+    const width = font.widthOfTextAtSize(text, size);
+    page.drawText(text, { x: centerX - width / 2, y, size, font, ...options });
+}
+function drawCenteredAtAnchor(page, text, font, size, anchorX, y, options = {}) {
+    const width = font.widthOfTextAtSize(text, size);
+    page.drawText(text, { x: anchorX - width / 2, y, size, font, ...options });
+}
+
 // Modificar la función de generación de PDF para incluir verificación
 app.post('/generate-pdf', upload.none(), async (req, res) => {
     try {
@@ -157,7 +187,9 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
             carrera,
             nombre,                
             responsableNombre,     
-            responsableCargo       
+            responsableCargo,
+            periodoInicio,
+            periodoFin
         } = cleanBody;
 
         let numReporte = parseInt(reporteNo);
@@ -165,7 +197,28 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         if (isNaN(numReporte) || numReporte < 1 || numReporte > 7) {
             return res.status(400).send('Número de reporte inválido');
         }
-        const periodo = periodos[numReporte - 1];
+        if (!periodoInicio || !periodoFin) {
+            return res.status(400).send('Las fechas de inicio y fin son obligatorias');
+        }
+        const inicioDate = new Date(periodoInicio);
+        const finDate = new Date(periodoFin);
+        if (isNaN(inicioDate) || isNaN(finDate) || finDate < inicioDate) {
+            return res.status(400).send('Rango de fechas inválido');
+        }
+        const mesesLargos = [
+            'enero','febrero','marzo','abril','mayo','junio',
+            'julio','agosto','septiembre','octubre','noviembre','diciembre'
+        ];
+        const formatDate = (dateStr) => {
+            const d = new Date(dateStr);
+            if (isNaN(d)) return dateStr;
+            const dia = String(d.getUTCDate()).padStart(2, '0');
+            const mes = mesesLargos[d.getUTCMonth()];
+            const anio = d.getUTCFullYear();
+            return `${dia} de ${mes} de ${anio}`;
+        };
+        const periodoInicioFmt = formatDate(periodoInicio);
+        const periodoFinFmt = formatDate(periodoFin);
         const templatePath = path.join(__dirname, '../docs/control-asis.pdf');
         if (!checkFile(templatePath)) {
             throw new Error('Plantilla PDF no encontrada');
@@ -179,98 +232,20 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         const textWidth = font.widthOfTextAtSize(reporteNo, fontSize);
         const centerX = (width - textWidth) / 2;
         const newX = centerX - 10;
-        firstPage.drawText(`${reporteNo}`, { x: newX, y: height - 100, size: fontSize, font: font });
-        firstPage.drawText(`${periodo.inicio}`, { x: 88, y: height - 117, size: 10 });
-        firstPage.drawText(`${periodo.fin}`, { x: 230, y: height - 117, size: 10 });
-        firstPage.drawText(`${registro}`, { x: 500, y: height - 117, size: 10 });
+        firstPage.drawText(`${reporteNo}`, { x: 267, y: height - 100, size: fontSize, font: font });
+        firstPage.drawText(`${periodoInicioFmt}`, { x: 107, y: height - 117, size: 10 });
+        firstPage.drawText(`${periodoFinFmt}`, { x: 247, y: height - 117, size: 10 });
+        firstPage.drawText(`${registro}`, { x: 500, y: height - 115, size: 10 });
         firstPage.drawText(`${nombre}`, { x: 135, y: height - 134, size: 10 });
         firstPage.drawText(`${boleta}`, { x: 466, y: height - 134, size: 10 });
         firstPage.drawText(`${unidadAcademica}`, { x: 122, y: height - 151, size: 10 });
-        firstPage.drawText(`${carrera}`, { x: 344, y: height - 151, size: 10 });
-        firstPage.drawText(`${responsableNombre}`, { x: 70, y: height - 730, size: 10, font: font, color: rgb(0,0,0) });
-        firstPage.drawText(`${responsableCargo}`, { x: 100, y: height - 740, size: 10, font: font, color: rgb(0,0,0) });
-        
-
-        
-        function fechaTextoADMY(fechaTexto) {
-            const meses = {
-                'enero': '01', 'febrero': '02', 'marzo': '03', 'abril': '04', 'mayo': '05', 'junio': '06',
-                'julio': '07', 'agosto': '08', 'septiembre': '09', 'octubre': '10', 'noviembre': '11', 'diciembre': '12'
-            };
-            const partes = fechaTexto.split(' de ');
-            if (partes.length !== 3) return fechaTexto;
-            const dia = partes[0].padStart(2, '0');
-            const mes = meses[partes[1].toLowerCase().trim()] || '01';
-            const anio = partes[2];
-            return `${dia}/${mes}/${anio}`;
-        }
-        
-        const inicioPeriodo = fechaTextoADMY(periodo.inicio);
-        const finPeriodo = fechaTextoADMY(periodo.fin);
-        
-        function getDiasHabiles(inicio, fin) {
-            const mesesAbrev = ['ENE','FEB','MAR','ABR','MAY','JUN','JUL','AGO','SEP','OCT','NOV','DIC'];
-            function textoADate(fecha) {
-                const [dia, mes, anio] = fecha.split('/');
-                return new Date(Date.UTC(anio, parseInt(mes)-1, dia));
-            }
-            const dias = [];
-            let fecha = textoADate(inicio);
-            const fechaFin = textoADate(fin);
-            while (fecha.getTime() <= fechaFin.getTime()) {
-                const diaSemana = fecha.getUTCDay();
-                if (diaSemana >= 1 && diaSemana <= 5) {
-                    const dia = fecha.getUTCDate().toString().padStart(2, '0');
-                    const mes = mesesAbrev[fecha.getUTCMonth()];
-                    const anio = fecha.getUTCFullYear();
-                    dias.push(`${dia}/${mes}/${anio}`);
-                }
-                fecha = new Date(fecha.getTime() + 24*60*60*1000);
-            }
-            return dias;
-        }
-        const diasHabiles = getDiasHabiles(inicioPeriodo, finPeriodo);
-        let yDias = height - 180;
-        firstPage.drawText('', { x: 60, y: yDias, size: 10, font: font });
-        firstPage.drawText('', { x: 220, y: yDias, size: 10, font: font });
-        firstPage.drawText('', { x: 300, y: yDias, size: 10, font: font });
-        firstPage.drawText('', { x: 400, y: yDias, size: 10, font: font });
-        yDias -= 15;
-        const horaEntrada = cleanBody.horaEntrada || '';
-        const horaSalida = cleanBody.horaSalida || '';
-        function calcularHoras(entrada, salida) {
-            if (!entrada || !salida) return 0;
-            let [h1, m1] = entrada.split(':').map(Number);
-            let [h2, m2] = salida.split(':').map(Number);
-            let diff = (h2*60 + m2) - (h1*60 + m1);
-            if (diff < 0) return 0;
-            return diff;
-        }
-        const minutosPorDia = calcularHoras(horaEntrada, horaSalida);
-        const totalDias = diasHabiles.length;
-        let sumaMinutos = minutosPorDia * totalDias;
-        let sumaHoras = Math.floor(sumaMinutos/60);
-        let sumaMin = sumaMinutos%60;
-        let sumaTexto = sumaMin > 0 ? `${sumaHoras}h ${sumaMin}m` : `${sumaHoras} hrs`;
-        diasHabiles.forEach(dia => {
-            let horasTexto = minutosPorDia > 0 ? (minutosPorDia%60 > 0 ? `${Math.floor(minutosPorDia/60)}h ${minutosPorDia%60}m` : `${Math.floor(minutosPorDia/60)} hrs`) : '';
-            firstPage.drawText(dia, { x: 95, y: yDias, size: 10, font: font });
-            firstPage.drawText(horaEntrada, { x: 228, y: yDias, size: 10, font: font });
-            firstPage.drawText(horaSalida, { x: 315, y: yDias, size: 10, font: font });
-            firstPage.drawText(horasTexto, { x: 385, y: yDias, size: 10, font: font });
-            yDias -= 18;
-        });
-        firstPage.drawText(`${sumaTexto}`, { x: 380, y: 165, size: 12, font: font, color: rgb(0,0,0) });
-
-       
-        try {
-            const form = pdfDoc.getForm();
-            form.flatten();
-        } catch (error) {
-            console.warn('No se pudieron aplanar los campos de formulario:', error);
-        }
-        
-        const pdfBytes = await pdfDoc.save();
+        firstPage.drawText(`${carrera}`, { x: 405, y: height - 151, size: 10 });
+        const signatureAnchorX = 220;
+        drawCenteredAtAnchor(firstPage, `${responsableNombre}`, font, 10, signatureAnchorX, height - 725, { color: rgb(0,0,0) });
+        drawCenteredAtAnchor(firstPage, `${responsableCargo}`, font, 10, signatureAnchorX, height - 740, { color: rgb(0,0,0) });
+        // Se eliminó la generación automática de fechas consecutivas y del total de horas; la tabla queda para captura manual.
+        const finalDoc = await stripPdfForms(pdfDoc);
+        const pdfBytes = await finalDoc.save();
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'attachment; filename="reporte.pdf"'
@@ -303,16 +278,8 @@ app.post('/generate-carta-aceptacion', async (req, res) => {
         firstPage.drawText(`${supervisor}`, { x: 90, y: height - 394, size: 12 });
         firstPage.drawText(`${nombre}`, { x: 80, y: height - 750, size: 12 });      // segunda vez nombre
         firstPage.drawText(`${supervisor}`, { x: 370, y: height - 750, size: 12 }); // segunda vez supervisor
-
-       
-        try {
-            const form = pdfDoc.getForm();
-            form.flatten();
-        } catch (error) {
-        
-        }
-
-        const pdfBytes = await pdfDoc.save();
+        const finalDoc = await stripPdfForms(pdfDoc);
+        const pdfBytes = await finalDoc.save();
         res.set({
             'Content-Type': 'application/pdf',
             'Content-Disposition': 'attachment; filename="carta-aceptacion.pdf"'
@@ -505,16 +472,8 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         font: montserratFont,
         color: rgb(0, 0, 0)
     });
-
-    // Bloquear la edición aplanando el formulario (quitar interactividad)
-    try {
-        const form = pdfDoc.getForm();
-        form.flatten();
-    } catch (error) {
-        // Si no hay formulario, ignora el error
-    }
-
-    const pdfOutput = await pdfDoc.save();
+    const finalDoc = await stripPdfForms(pdfDoc);
+    const pdfOutput = await finalDoc.save();
 
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', 'attachment; filename=reporte-mensual.pdf');
@@ -571,27 +530,23 @@ app.post('/generate-reporte-global', async (req, res) => {
         if (!nombres) nombres = partes[0] || '';
 
         // Imprime en el PDF: Apellido Paterno, Apellido Materno, Nombre(s)
-        page.drawText(`${apellidoP} ${apellidoM} ${nombres}`, { x: 107, y: 583, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.boleta}`, { x: 99, y: 562, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.semestre}`, { x: 111, y: 541, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.carrera}`, { x: 369, y: 562, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.nregistro}`, { x: 344, y: 541, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.telefono}`, { x: 160, y: 520, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.correo}`, { x: 355, y: 520, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.responsable}`, { x: 390, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
-        page.drawText(`${cleanBody.cargoResponsable}`, { x: 395, y: 220, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
-        page.drawText(`${cleanBody.prestatario}`, { x: 119, y: 499, size: 12, font: timesFont });
-        page.drawText(`${cleanBody.programa}`, { x: 173, y: 478.5, size: 12, font: timesFont });
-        page.drawText(`${nombres} ${apellidoP} ${apellidoM}`, { x: 112, y: 230, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${apellidoP} ${apellidoM} ${nombres}`, { x: 113, y: 594, size: 11});
+        page.drawText(`${cleanBody.boleta}`, { x: 101, y: 573, size: 11});
+        page.drawText(`${cleanBody.semestre}`, { x: 117, y: 552, size: 11 });
+        page.drawText(`${cleanBody.carrera}`, { x: 377, y: 573, size: 11});
+        page.drawText(`${cleanBody.nregistro}`, { x: 347, y: 552, size: 11 });
+        page.drawText(`${cleanBody.telefono}`, { x: 168, y: 531, size: 11 });
+        page.drawText(`${cleanBody.correo}`, { x: 377, y: 531, size: 11});
+        const globalSignatureAnchorX = 315;
+        drawCenteredAtAnchor(page, `${cleanBody.responsable}`, montserratLight, 10, globalSignatureAnchorX, 70, { color: rgb(0.56, 0.56, 0.56) });
+        drawCenteredAtAnchor(page, `${cleanBody.cargoResponsable}`, montserratLight, 10, globalSignatureAnchorX, 60, { color: rgb(0.56, 0.56, 0.56) });
+        page.drawText(`${cleanBody.prestatario}`, { x: 125, y: 510.5, size: 11});
+        page.drawText(`${cleanBody.programa}`, { x: 185, y: 489.5, size: 11 });
+        page.drawText(`${nombres} ${apellidoP} ${apellidoM}`, { x: 90, y: 70, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
         page.drawText(`Fecha de elaboración: ${cleanBody.fechaElaboracion}`, { x: 800, y: 500, size: 11, font: timesFont });
         page.drawText(`Periodo: ${cleanBody.periodo}`, { x: 800, y: 480, size: 11, font: timesFont });
-
-        try {
-            const form = pdfDoc.getForm();
-            form.flatten();
-        } catch (error) {}
-
-        const pdfOutput = await pdfDoc.save();
+        const finalDoc = await stripPdfForms(pdfDoc);
+        const pdfOutput = await finalDoc.save();
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=reporte-global.pdf');
