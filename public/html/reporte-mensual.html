@@ -9,12 +9,17 @@
             const fase1 = document.getElementById('fase1');
             const fase2 = document.getElementById('fase2');
             const siguienteBtn = document.getElementById('siguienteBtn');
+            const nregistro = document.getElementById('nregistro');
 
             fase2.style.display = 'none';
             siguienteBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 fase1.style.display = 'none';
                 fase2.style.display = 'block';
+            });
+
+            nregistro.addEventListener('input', function () {
+                this.value = this.value.toUpperCase();
             });
         });
     </script>
@@ -63,11 +68,21 @@
                             <label for="encargadoDirecto">Encargado Directo:</label>
                             <input type="text" id="encargadoDirecto" name="encargadoDirecto" required title="Solo letras y acentos permitidos">
                         </div>
+                        <div class="form-group">
+                            <label for="cargo">Cargo:</label>
+                            <input type="text" id="cargo" name="cargo" required>
+                        </div>
                     </div>
                     <div class="form-col">
                         <div class="form-group">
                             <label for="nregistro">N. Registro:</label>
-                            <input type="number" id="nregistro" name="nregistro" required min="1">
+                            <input
+                                type="text"
+                                id="nregistro"
+                                name="nregistro"
+                                required
+                                pattern="[A-Za-z0-9]+"
+                                title="Solo letras y números, sin espacios">
                         </div>
                         <div class="form-group">
                             <label for="carrera">Carrera:</label>
@@ -98,10 +113,6 @@
                         <div class="form-group">
                             <label for="correo">Correo:</label>
                             <input type="email" id="correo" name="correo" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="cargo">Cargo:</label>
-                            <input type="text" id="cargo" name="cargo" required>
                         </div>
                     </div>
                 </div>
