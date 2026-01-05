@@ -516,10 +516,33 @@ app.post('/generate-reporte-global', async (req, res) => {
         const timesFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Times-New-Roman.ttf'));
         const timesFont = await pdfDoc.embedFont(timesFontBytes);
 
+        // fuente Noto Sans para las fechas
+        const notoSansBytes = fs.readFileSync(path.join(__dirname, '../fonts/NotoSans-Regular.ttf'));
+        const notoSansFont = await pdfDoc.embedFont(notoSansBytes);
+
         const montserratLightBytes = fs.readFileSync(path.join(__dirname, '../fonts/Montserrat-Light.otf'));
         const montserratLight = await pdfDoc.embedFont(montserratLightBytes);
 
+        // Función auxiliar para mostrar fechas completas en español
+        function fechaCompleta(fechaISO) {
+            const meses = [
+                'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+                'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
+            ];
+            const [anio, mes, dia] = fechaISO.split('-');
+            if (!anio || !mes || !dia) return fechaISO;
+            return `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
+        }
+
         const page = pdfDoc.getPages()[0];
+
+        // texto CECyT N° 19 “Leona Vicario” en Noto Sans 12
+        page.drawText('CECyT N° 19 “Leona Vicario”', {
+            x: 227,
+            y: 744,
+            size: 12,
+            font: notoSansFont
+        });
 
         // Divide el nombre completo en partes para obtener apellidos y nombre
         let nombreCompleto = cleanBody.nombreCompleto || '';
@@ -542,9 +565,107 @@ app.post('/generate-reporte-global', async (req, res) => {
         drawCenteredAtAnchor(page, `${cleanBody.cargoResponsable}`, montserratLight, 10, globalSignatureAnchorX, 60, { color: rgb(0.56, 0.56, 0.56) });
         page.drawText(`${cleanBody.prestatario}`, { x: 125, y: 510.5, size: 11});
         page.drawText(`${cleanBody.programa}`, { x: 185, y: 489.5, size: 11 });
+
+        // imprimir resumen de actividades (máx. 1000 caracteres)
+        const resumenActividades = (cleanBody.resumenActividades || '').slice(0, 1000); // CAMBIO: antes 600
+
+        function dividirTexto(texto, maxLen) {
+            const palabras = texto.trim().split(/\s+/);
+            const lineas = [];
+            let lineaActual = '';
+
+            palabras.forEach(palabra => {
+                if (!lineaActual) {
+                    lineaActual = palabra;
+                } else if ((lineaActual + ' ' + palabra).length <= maxLen) {
+                    lineaActual += ' ' + palabra;
+                } else {
+                    lineas.push(lineaActual);
+                    lineaActual = palabra;
+                }
+            });
+
+            if (lineaActual) lineas.push(lineaActual);
+            return lineas;
+        }
+
+        // NUEVO: función para justificar una línea a un ancho máximo aproximado
+        function justificarLinea(texto, font, size, maxWidth) {
+            const palabras = texto.trim().split(/\s+/);
+            if (palabras.length <= 1) return texto; // no se justifica una sola palabra
+
+            let linea = palabras.join(' ');
+            let width = font.widthOfTextAtSize(linea, size);
+
+            // Si ya está cerca del ancho, no tocar
+            if (width >= maxWidth * 0.98) return linea;
+
+            let espacios = palabras.length - 1;
+            let iteraciones = 0;
+
+            // Añadir espacios extra entre palabras mientras haya margen y no nos pasemos mucho
+            while (width < maxWidth && espacios > 0 && iteraciones < 20) {
+                for (let i = 0; i < palabras.length - 1; i++) {
+                    palabras[i] += ' ';
+                    linea = palabras.join(' ');
+                    width = font.widthOfTextAtSize(linea, size);
+                    if (width >= maxWidth * 0.98) break;
+                }
+                iteraciones++;
+                if (width >= maxWidth * 0.98) break;
+            }
+
+            return linea;
+        }
+
+        const lineasResumen = dividirTexto(resumenActividades, 80);
+        let yResumen = 450;
+        const saltoLinea = 18;
+        const anchoMaximoTexto = 440;
+
+        lineasResumen.forEach((linea, index) => {
+            const esUltima = index === lineasResumen.length - 1;
+            let textoDibujar = linea;
+
+            if (!esUltima) {
+                textoDibujar = justificarLinea(linea, timesFont, 12, anchoMaximoTexto);
+            }
+
+            page.drawText(textoDibujar, {
+                x: 60,
+                y: yResumen,
+                size: 12,
+            });
+            yResumen -= saltoLinea;
+        });
+
+        // imprimir fechas de inicio y fin del programa con Noto Sans
+        const fechaInicioTexto = fechaCompleta(cleanBody.fechaInicio);
+        const fechaFinTexto = fechaCompleta(cleanBody.fechaFin);
+        const xFechas = 250;
+        const yFechas = 648;
+        const sizeFechas = 13;
+
+        page.drawText(`${fechaInicioTexto}`, {
+            x: xFechas,
+            y: yFechas,
+            size: sizeFechas,
+            font: notoSansFont
+        });
+
+        const anchoInicio = notoSansFont.widthOfTextAtSize(fechaInicioTexto, sizeFechas);
+
+        page.drawText(` al ${fechaFinTexto}`, {
+            x: xFechas + anchoInicio,
+            y: yFechas,
+            size: sizeFechas,
+            font: notoSansFont
+        });
+
         page.drawText(`${nombres} ${apellidoP} ${apellidoM}`, { x: 90, y: 70, size: 10, font: montserratLight, color: rgb(0.56, 0.56, 0.56) });
         page.drawText(`Fecha de elaboración: ${cleanBody.fechaElaboracion}`, { x: 800, y: 500, size: 11, font: timesFont });
         page.drawText(`Periodo: ${cleanBody.periodo}`, { x: 800, y: 480, size: 11, font: timesFont });
+
         const finalDoc = await stripPdfForms(pdfDoc);
         const pdfOutput = await finalDoc.save();
 

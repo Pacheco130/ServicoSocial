@@ -5,6 +5,56 @@
     <title>Reporte Global</title>
     <link rel="stylesheet" href="../css/reporte-mensual.css">
     <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
+    <!-- NUEVO: estilos específicos para el resumen -->
+    <style>
+        .resumen-section {
+            display: none;
+            margin-top: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid #d0d7de;
+            background: #f8fafc;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+        }
+        .resumen-section.visible {
+            display: block;
+        }
+        .resumen-section label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+        #resumenActividades {
+            width: 100%;
+            min-height: 140px;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            text-align: justify; /* NUEVO: justificar texto en el textarea */
+            line-height: 1.5; /* NUEVO: interlineado 1.5 */
+        }
+        #resumenActividades:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+        }
+        #resumenContador {
+            display: block;
+            margin-top: 0.25rem;
+            text-align: right;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -81,12 +131,26 @@
                         <label for="periodo">Periodo:</label>
                         <input type="text" id="periodo" name="periodo" required>
                     </div>
-                     <div class="form-group">
+                    <div class="form-group">
                         <label for="fechaFin">Fecha de fin:</label>
                         <input type="date" id="fechaFin" name="fechaFin" required>
                     </div>
                 </div>
             </div>
+
+            <!-- NUEVO: sección de resumen con clase específica -->
+            <div id="resumenSection" class="form-group resumen-section">
+                <label for="resumenActividades">
+                    Inicio de reporte de Actividades (hacer 2 cuartillas mas):
+                </label>
+                <textarea id="resumenActividades"
+                          name="resumenActividades"
+                          maxlength="1000"   <!-- CAMBIO: antes 600 -->
+                          rows="4"
+                          required></textarea>
+                <small id="resumenContador">0 / 1000</small> <!-- CAMBIO: antes 0 / 600 -->
+            </div>
+
             <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
             <button type="submit">Descargar Reporte Global</button>
         </form>
@@ -100,6 +164,46 @@
             e.preventDefault();
         }
     });
+
+    // NUEVO: lógica para mostrar el resumen solo cuando todo lo demás está lleno
+    (function () {
+        const form = document.getElementById('reporteGlobalForm');
+        const resumenSection = document.getElementById('resumenSection');
+        const resumenTextarea = document.getElementById('resumenActividades');
+        const resumenContador = document.getElementById('resumenContador');
+
+        const maxResumen = parseInt(resumenTextarea.maxLength, 10) || 1000; // CAMBIO: antes 600
+
+        // Todos los campos required excepto el propio resumen
+        const requiredFields = Array.from(
+            form.querySelectorAll('input[required], select[required]')
+        ).filter(el => el.id !== 'resumenActividades');
+
+        function actualizarVisibilidadResumen() {
+            const todosLlenos = requiredFields.every(el =>
+                el.value && el.value.trim() !== ''
+            );
+            if (todosLlenos) {
+                resumenSection.classList.add('visible');
+            } else {
+                resumenSection.classList.remove('visible');
+                resumenTextarea.value = '';
+                if (resumenContador) resumenContador.textContent = `0 / ${maxResumen}`;
+            }
+        }
+
+        requiredFields.forEach(el => {
+            el.addEventListener('input', actualizarVisibilidadResumen);
+            el.addEventListener('change', actualizarVisibilidadResumen);
+        });
+
+        if (resumenTextarea && resumenContador) {
+            resumenTextarea.addEventListener('input', function () {
+                const len = this.value.length;
+                resumenContador.textContent = `${len} / ${maxResumen}`;
+            });
+        }
+    })();
     </script>
 </body>
 </html>
