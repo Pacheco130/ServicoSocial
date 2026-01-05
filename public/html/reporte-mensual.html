@@ -4,49 +4,17 @@
     <meta charset="UTF-8">
     <title>Reporte Mensual</title>
     <link rel="stylesheet" href="../css/reporte-mensual.css">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/es.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const fase1 = document.getElementById('fase1');
             const fase2 = document.getElementById('fase2');
             const siguienteBtn = document.getElementById('siguienteBtn');
+
             fase2.style.display = 'none';
             siguienteBtn.addEventListener('click', function (e) {
                 e.preventDefault();
                 fase1.style.display = 'none';
                 fase2.style.display = 'block';
-            });
-
-            // Fechas hábiles manuales por reporte
-            const fechasPorReporte = [
-                ["2025-11-18","2025-11-19","2025-11-20","2025-11-21","2025-11-24"], // Reporte 1
-                ["2025-12-16","2025-12-17","2025-12-18","2025-12-19","2026-01-05"], // Reporte 2
-                ["2026-01-16","2026-01-19","2026-01-20","2026-01-21","2026-01-22"], // Reporte 3
-                ["2026-02-16","2026-02-17","2026-02-18","2026-02-19","2026-02-20"], // Reporte 4
-                ["2026-03-17","2026-03-18","2026-03-19","2026-03-20","2026-03-23"], // Reporte 5
-                ["2026-04-16","2026-04-17","2026-04-20","2026-04-21","2026-04-22"], // Reporte 6
-                ["2026-05-18","2026-05-19","2026-05-20","2026-05-21","2026-05-22"]  // Reporte 7
-            ];
-            const nreporte = document.getElementById('nreporte');
-            const fecha = document.getElementById('fecha');
-            let fp = null;
-            nreporte.addEventListener('change', function () {
-                const idx = parseInt(nreporte.value) - 1;
-                if (fp) fp.destroy();
-                if (idx >= 0 && fechasPorReporte[idx]) {
-                    fp = flatpickr(fecha, {
-                        dateFormat: "Y-m-d",
-                        enable: fechasPorReporte[idx],
-                        defaultDate: fechasPorReporte[idx][0],
-                        minDate: fechasPorReporte[idx][0],
-                        locale: "es"
-                    });
-                    fecha.value = fechasPorReporte[idx][0];
-                } else {
-                    fecha.value = '';
-                }
             });
         });
     </script>
@@ -120,8 +88,12 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="fecha">Fecha:</label>
-                            <input type="text" id="fecha" name="fecha" required>
+                            <label for="fechaInicio">Fecha de inicio del reporte:</label>
+                            <input type="date" id="fechaInicio" name="fechaInicio" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="fechaFin">Fecha de fin del reporte:</label>
+                            <input type="date" id="fechaFin" name="fechaFin" required>
                         </div>
                         <div class="form-group">
                             <label for="correo">Correo:</label>

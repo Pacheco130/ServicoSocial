@@ -111,16 +111,6 @@ app.use((req, res, next) => {
     next();
 });
 
-const periodos = [
-    { inicio: "16 de octubre de 2025", fin: "15 de noviembre de 2025" },
-    { inicio: "16 de noviembre de 2025", fin: "15 de diciembre de 2025" },
-    { inicio: "16 de diciembre de 2025", fin: "15 de enero de 2026" },
-    { inicio: "16 de enero de 2026", fin: "15 de febrero de 2026" },
-    { inicio: "16 de febrero de 2026", fin: "15 de marzo de 2026" },
-    { inicio: "16 de marzo de 2026", fin: "15 de abril de 2026" },
-    { inicio: "16 de abril de 2026", fin: "14 de mayo de 2026" }
-];
-
 
 function sanitizeBody(body) {
     const sanitized = {};
@@ -295,16 +285,13 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     
     const cleanBody = sanitizeBody(req.body);
     
-   
     const pdfPath = path.join(__dirname, '../docs/reporte-mensual1.pdf');
     const pdfBytes = fs.readFileSync(pdfPath);
     const pdfDoc = await PDFDocument.load(pdfBytes);
 
-    
     const fontkit = require('fontkit');
     pdfDoc.registerFontkit(fontkit);
 
-   
     const montserratFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Montserrat-VariableFont_wght.ttf'));
     const montserratFont = await pdfDoc.embedFont(montserratFontBytes);
 
@@ -324,104 +311,86 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     const timesFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Times-New-Roman.ttf'));
     const timesFont = await pdfDoc.embedFont(timesFontBytes);
 
-    // Función para convertir fecha a formato completo en español
+    // NUEVO: función para mostrar fechas completas en español (misma lógica que reporte global)
     function fechaCompleta(fechaISO) {
         const meses = [
             'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
             'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'
         ];
+        if (!fechaISO) return '';
         const [anio, mes, dia] = fechaISO.split('-');
         if (!anio || !mes || !dia) return fechaISO;
-        return `${parseInt(dia)} de ${meses[parseInt(mes)-1]} de ${anio}`;
+        return `${parseInt(dia)} de ${meses[parseInt(mes) - 1]} de ${anio}`;
     }
 
     const page = pdfDoc.getPages()[0];
-    const nreporte = parseInt(req.body.nreporte);
-    const periodo = periodos[nreporte - 1];
-    // N. Reporte con Montserrat Bold, tamaño 14
-    page.drawText(`${req.body.nreporte}`, {
-        x: 388,
-        y: 667,
-        size: 14,
-        font: montserratFont,
-        color: rgb(0, 0, 0)
-    });
-    // Fecha en formato completo, Montserrat Light, tamaño 11
-    page.drawText(`${fechaCompleta(req.body.fecha)}`, {
-        x: 346,
-        y: 696,
-        size: 11,
-        font: montserratFont,
-        color: rgb(0, 0, 0)
-    });
-    // Periodo con fechas fijas según el número de reporte
-    page.drawText(`Periodo de: ${periodo.inicio} Al: ${periodo.fin}`, {
-        x: 210,
-        y: 639,
+
+    // Encabezado superior
+    page.drawText('CECyT N° 19 “Leona Vicario”', {
+        x: 227,
+        y: 744,
         size: 12,
-        font: timesFont,
-        color: rgb(0, 0, 0)
-    });
-    page.drawText(`${req.body.nombreA}`, {
-        x: 100,
-        y: 591.5,
-        size: 10,
-        font: timesFont,
-        color: rgb(0, 0, 0)
-    });
-    page.drawText(`${req.body.boleta}`, { 
-        x: 92, 
-        y: 573, 
-        size: 10, 
-        font: timesFont, 
-        color: rgb(0, 0, 0)
-    });
-    page.drawText(`${req.body.semestre}`, { 
-        x: 103, 
-        y: 554,
-        size: 10, 
-        font: timesFont, 
-        color: rgb(0, 0, 0) 
-    });
-    page.drawText(`${req.body.telefono}`, { 
-        x: 143, 
-        y: 535.5,
-        size: 10, 
-        font: timesFont, 
-        color: rgb(0, 0, 0)
     });
 
-    page.drawText(`${req.body.prestatario}`, { 
-        x: 110, 
-        y: 517.2,
+    // N. Reporte
+    page.drawText(`${req.body.nreporte}`, {
+        x: 390,
+        y: 680,
+        size: 16,
+    });
+
+    const fechaInicioTexto = fechaCompleta(cleanBody.fechaInicio);
+    const fechaFinTexto = fechaCompleta(cleanBody.fechaFin);
+    page.drawText(`${fechaInicioTexto} al ${fechaFinTexto}`, {
+        x: 250,
+        y: 648.5,
+        size: 13,
+    });
+
+    page.drawText(`${req.body.nombreA}`, {
+        x: 108,
+        y: 595.5,
         size: 10,
-        font: timesFont,
-        color: rgb(0, 0, 0)
+    });
+    page.drawText(`${req.body.boleta}`, { 
+        x: 98, 
+        y: 575, 
+        size: 10, 
+    });
+    page.drawText(`${req.body.semestre}`, { 
+        x: 113, 
+        y: 554,
+        size: 10,  
+    });
+    page.drawText(`${req.body.telefono}`, { 
+        x: 156, 
+        y: 533,
+        size: 10, 
+    });
+
+    // Ajustar prestatario a las mismas coords del reporte global
+    page.drawText(`${req.body.prestatario}`, { 
+        x: 122, 
+        y: 512,
+        size: 10,
     });
 
     page.drawText(`${req.body.carrera}`, { 
-        x: 365, 
-        y: 573, 
+        x: 382, 
+        y: 575, 
         size: 10, 
-        font: timesFont, 
-        color: rgb(0, 0, 0)
     });
-    // N. Registro in Montserrat Bold, tamaño 11
     page.drawText(`${req.body.nregistro}`, {
-        x: 343,
-        y: 554,
+        x: 354,
+        y: 554.3,
         size: 10,
-        font: timesFont,
-        color: rgb(0, 0, 0)
     });
     page.drawText(`${req.body.correo}`, { 
-        x: 355.8,
-        y: 535,
+        x: 369,
+        y: 534,
         size: 10,
-        font: timesFont,
-        color: rgb(0, 0, 0)
-        });
-    // Imprimir las 7 actividades en el PDF
+    });
+
     function splitText(text, maxLength) {
         const result = [];
         let current = text;
@@ -433,7 +402,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         return result;
     }
     const actividadesY = [468, 455, 442, 429, 416, 403, 390]; // Y para cada actividad
-    let yBase = 468;
+    let yBase = 460;
     for (let i = 1; i <= 7; i++) {
         const actividad = cleanBody[`actividad${i}`] || '';
         const lineas = splitText(actividad, 92);
@@ -442,36 +411,26 @@ app.post('/generate-reporte-mensual', async (req, res) => {
             page.drawText(linea, {
                 x: 54,
                 y: y,
-                size: 11,
-                font: timesFont,
-                color: rgb(0, 0, 0)
+                size: 12,
+
             });
-            y -= 12; // Salto de línea para la siguiente línea de texto
+            y -= 15; // Salto de línea para la siguiente línea de texto
         }
         yBase = y - 8; // Espacio extra entre actividades
     }
-     // Encargado Directo y Cargo en Montserrat Light, tamaño 10
-    page.drawText(`${req.body.encargadoDirecto}`, {
-        x: 400,
-        y: 190,
+ 
+    // Firmas: misma lógica y coordenadas que reporte global
+    const monthlySignatureAnchorX = 315;
+    drawCenteredAtAnchor(page, `${cleanBody.encargadoDirecto}`, montserratLight, 10, monthlySignatureAnchorX, 70, { color: rgb(0.56, 0.56, 0.56) });
+    drawCenteredAtAnchor(page, `${cleanBody.cargo}`,            montserratLight, 10, monthlySignatureAnchorX, 60, { color: rgb(0.56, 0.56, 0.56) });
+    page.drawText(`${cleanBody.nombreA}`, {
+        x: 70,
+        y: 70,
         size: 10,
-        font: montserratFont,
-        color: rgb(0, 0, 0)
+        font: montserratLight,
+        color: rgb(0.56, 0.56, 0.56)
     });
-    page.drawText(`${req.body.cargo}`, { 
-        x: 430, 
-        y: 180,
-        size: 10,
-        font: montserratFont,
-        color: rgb(0, 0, 0)
-     });
-    page.drawText(`${req.body.nombreA}`, {
-        x: 90,
-        y: 190,
-        size: 10,
-        font: montserratFont,
-        color: rgb(0, 0, 0)
-    });
+
     const finalDoc = await stripPdfForms(pdfDoc);
     const pdfOutput = await finalDoc.save();
 
