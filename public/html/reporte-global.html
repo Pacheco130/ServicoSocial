@@ -94,7 +94,13 @@
                     </div>
                     <div class="form-group">
                         <label for="nregistro">N. de Registro:</label>
-                        <input type="text" id="nregistro" name="nregistro" required>
+                        <input
+                            type="text"
+                            id="nregistro"
+                            name="nregistro"
+                            required
+                            pattern="[0-9/-]+"
+                            title="Solo números y los símbolos / o - (ej. 25019/0254 o 25019-0254)">
                     </div>
                     <div class="form-group">
                         <label for="programa">Nombre del Programa:</label>

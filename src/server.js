@@ -71,7 +71,7 @@ process.on('SIGINT', () => {
     });
 });
 
-
+//0436, 0244
 app.get('/favicon.ico', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/favicon.ico'));
 });
@@ -391,33 +391,76 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         size: 10,
     });
 
-    function splitText(text, maxLength) {
-        const result = [];
-        let current = text;
-        while (current.length > maxLength) {
-            result.push(current.slice(0, maxLength));
-            current = current.slice(maxLength);
-        }
-        if (current.length > 0) result.push(current);
-        return result;
-    }
-    const actividadesY = [468, 455, 442, 429, 416, 403, 390]; // Y para cada actividad
-    let yBase = 460;
-    for (let i = 1; i <= 7; i++) {
-        const actividad = cleanBody[`actividad${i}`] || '';
-        const lineas = splitText(actividad, 92);
-        let y = yBase;
-        for (const linea of lineas) {
-            page.drawText(linea, {
-                x: 54,
-                y: y,
-                size: 12,
+    // Nuevo: usar un solo resumen de actividades, similar al reporte global
+    const resumenActividades = (cleanBody.resumenActividades || '').slice(0, 1000);
 
-            });
-            y -= 15; // Salto de línea para la siguiente línea de texto
-        }
-        yBase = y - 8; // Espacio extra entre actividades
+    function dividirTexto(texto, maxLen) {
+        const palabras = texto.trim().split(/\s+/);
+        const lineas = [];
+        let lineaActual = '';
+
+        palabras.forEach(palabra => {
+            if (!lineaActual) {
+                lineaActual = palabra;
+            } else if ((lineaActual + ' ' + palabra).length <= maxLen) {
+                lineaActual += ' ' + palabra;
+            } else {
+                lineas.push(lineaActual);
+                lineaActual = palabra;
+            }
+        });
+
+        if (lineaActual) lineas.push(lineaActual);
+        return lineas;
     }
+
+    function justificarLinea(texto, font, size, maxWidth) {
+        const palabras = texto.trim().split(/\s+/);
+        if (palabras.length <= 1) return texto;
+
+        let linea = palabras.join(' ');
+        let width = font.widthOfTextAtSize(linea, size);
+
+        if (width >= maxWidth * 0.98) return linea;
+
+        let espacios = palabras.length - 1;
+        let iteraciones = 0;
+
+        while (width < maxWidth && espacios > 0 && iteraciones < 20) {
+            for (let i = 0; i < palabras.length - 1; i++) {
+                palabras[i] += ' ';
+                linea = palabras.join(' ');
+                width = font.widthOfTextAtSize(linea, size);
+                if (width >= maxWidth * 0.98) break;
+            }
+            iteraciones++;
+            if (width >= maxWidth * 0.98) break;
+        }
+
+        return linea;
+    }
+
+    const lineasResumen = dividirTexto(resumenActividades, 80);
+    let yResumen = 460; // Zona donde antes iban las actividades
+    const saltoLinea = 18;
+    const anchoMaximoTexto = 440;
+
+    lineasResumen.forEach((linea, index) => {
+        const esUltima = index === lineasResumen.length - 1;
+        let textoDibujar = linea;
+
+        if (!esUltima) {
+            textoDibujar = justificarLinea(linea, timesFont, 12, anchoMaximoTexto);
+        }
+
+        page.drawText(textoDibujar, {
+            x: 54,
+            y: yResumen,
+            size: 12,
+            font: timesFont
+        });
+        yResumen -= saltoLinea;
+    });
  
     // Firmas: misma lógica y coordenadas que reporte global
     const monthlySignatureAnchorX = 315;

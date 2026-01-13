@@ -23,6 +23,50 @@
             });
         });
     </script>
+    <style>
+        .resumen-section {
+            margin-top: 1rem;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            border: 1px solid #d0d7de;
+            background: #f8fafc;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+        }
+        .resumen-section label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #111827;
+        }
+        #resumenActividades {
+            width: 100%;
+            min-height: 140px;
+            padding: 0.75rem;
+            border-radius: 6px;
+            border: 1px solid #cbd5e1;
+            font-family: inherit;
+            font-size: 0.95rem;
+            resize: vertical;
+            box-sizing: border-box;
+            background-color: #ffffff;
+            text-align: justify;
+            line-height: 1.5;
+        }
+        #resumenActividades:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 1px rgba(37, 99, 235, 0.25);
+        }
+        #resumenContador {
+            display: block;
+            margin-top: 0.25rem;
+            text-align: right;
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+    </style>
 </head>
 <body>
     <header>
@@ -81,8 +125,8 @@
                                 id="nregistro"
                                 name="nregistro"
                                 required
-                                pattern="[A-Za-z0-9]+"
-                                title="Solo letras y números, sin espacios">
+                                pattern="[0-9/-]+"
+                                title="Solo números y los símbolos / o - (ej. 25019/0254 o 25019-0254)">
                         </div>
                         <div class="form-group">
                             <label for="carrera">Carrera:</label>
@@ -119,17 +163,16 @@
                 <button id="siguienteBtn" type="button">Siguiente</button>
             </div>
             <div id="fase2">
-                <div class="form-group">
-                    <label>Actividades:</label>
-                    <div class="actividades-group">
-                        <input type="text" name="actividad1" id="actividad1" placeholder="Actividad 1" required>
-                        <input type="text" name="actividad2" id="actividad2" placeholder="Actividad 2" required>
-                        <input type="text" name="actividad3" id="actividad3" placeholder="Actividad 3" required>
-                        <input type="text" name="actividad4" id="actividad4" placeholder="Actividad 4" required>
-                        <input type="text" name="actividad5" id="actividad5" placeholder="Actividad 5" required>
-                        <input type="text" name="actividad6" id="actividad6" placeholder="Actividad 6" required>
-                        <input type="text" name="actividad7" id="actividad7" placeholder="Actividad 7" required>
-                    </div>
+                <div id="resumenSection" class="form-group resumen-section">
+                    <label for="resumenActividades">
+                        Describe las Actividades del Mes:
+                    </label>
+                    <textarea id="resumenActividades"
+                              name="resumenActividades"
+                              maxlength="1000"
+                              rows="4"
+                              required></textarea>
+                    <small id="resumenContador">0 / 1000</small>
                 </div>
                 <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
                 <button type="submit">Descargar Reporte Mensual</button>
@@ -147,6 +190,20 @@
             e.preventDefault();
         }
     });
+    </script>
+    <script>
+    (function () {
+        const resumenTextarea = document.getElementById('resumenActividades');
+        const resumenContador = document.getElementById('resumenContador');
+        if (!resumenTextarea || !resumenContador) return;
+
+        const maxResumen = parseInt(resumenTextarea.maxLength, 10) || 1000;
+
+        resumenTextarea.addEventListener('input', function () {
+            const len = this.value.length;
+            resumenContador.textContent = `${len} / ${maxResumen}`;
+        });
+    })();
     </script>
 </body>
 </html>
