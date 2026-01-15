@@ -50,6 +50,11 @@ document.getElementById('aceptacionForm').addEventListener('submit', function(e)
         e.preventDefault();
     }
 });
+
+// No permitir números en el campo Supervisor
+document.getElementById('supervisor').addEventListener('input', function () {
+    this.value = this.value.replace(/[0-9]/g, '');
+});
 </script>
     <script src="../js/script.js"></script>
 </body>

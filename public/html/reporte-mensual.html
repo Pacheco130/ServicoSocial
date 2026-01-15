@@ -18,8 +18,9 @@
                 fase2.style.display = 'block';
             });
 
+            // Restringir a solo números, / y -
             nregistro.addEventListener('input', function () {
-                this.value = this.value.toUpperCase();
+                this.value = this.value.replace(/[^\d\/-]/g, '');
             });
         });
     </script>

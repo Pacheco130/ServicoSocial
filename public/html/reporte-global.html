@@ -20,13 +20,15 @@
         .resumen-section.visible {
             display: block;
         }
+        /* Ajuste: el label ya no es flex, permite salto de línea y se confina al ancho */
         .resumen-section label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: block;
             font-weight: 600;
             margin-bottom: 0.5rem;
             color: #111827;
+            white-space: normal;
+            word-wrap: break-word;
+            max-width: 100%;
         }
         #resumenActividades {
             width: 100%;
@@ -134,10 +136,6 @@
                         <input type="text" id="prestatario" name="prestatario" required>
                     </div>
                     <div class="form-group">
-                        <label for="periodo">Periodo:</label>
-                        <input type="text" id="periodo" name="periodo" required>
-                    </div>
-                    <div class="form-group">
                         <label for="fechaFin">Fecha de fin:</label>
                         <input type="date" id="fechaFin" name="fechaFin" required>
                     </div>
@@ -147,11 +145,11 @@
             <!-- NUEVO: sección de resumen con clase específica -->
             <div id="resumenSection" class="form-group resumen-section">
                 <label for="resumenActividades">
-                    Inicio de reporte de Actividades (hacer 2 cuartillas mas):
+                    Inicio de reporte de Actividades<br>(hacer 2 cuartillas más):
                 </label>
                 <textarea id="resumenActividades"
                           name="resumenActividades"
-                          maxlength="1000"   <!-- CAMBIO: antes 600 -->
+                          maxlength="1000"
                           rows="4"
                           required></textarea>
                 <small id="resumenContador">0 / 1000</small> <!-- CAMBIO: antes 0 / 600 -->
@@ -207,6 +205,27 @@
             resumenTextarea.addEventListener('input', function () {
                 const len = this.value.length;
                 resumenContador.textContent = `${len} / ${maxResumen}`;
+            });
+        }
+    })();
+
+    // NUEVO: restricciones de entrada
+    (function () {
+        // No permitir números en varios campos de texto
+        const soloLetrasIds = ['nombreCompleto', 'responsable', 'programa', 'cargoResponsable'];
+        soloLetrasIds.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            el.addEventListener('input', function () {
+                this.value = this.value.replace(/[0-9]/g, '');
+            });
+        });
+
+        // Restringir N. de Registro a solo números, / y -
+        const nregistro = document.getElementById('nregistro');
+        if (nregistro) {
+            nregistro.addEventListener('input', function () {
+                this.value = this.value.replace(/[^\d\/-]/g, '');
             });
         }
     })();

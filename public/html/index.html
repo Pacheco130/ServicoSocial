@@ -29,7 +29,13 @@
         
         <div class="form-group">
             <label for="registro">No. de Registro:</label>
-            <input type="text" id="registro" name="registro" required>
+            <input
+                type="text"
+                id="registro"
+                name="registro"
+                required
+                pattern="[0-9/-]+"
+                title="Solo números y los símbolos / o - (ej. 25019/0254 o 25019-0254)">
         </div>
         
         <div class="form-group">
@@ -102,6 +108,22 @@
                 periodoFin.value = periodoInicio.value;
             }
         });
+
+        // Restringir No. de Registro a solo números, / y -
+        const registro = document.getElementById('registro');
+        if (registro) {
+            registro.addEventListener('input', function () {
+                this.value = this.value.replace(/[^\d\/-]/g, '');
+            });
+        }
+
+        // No permitir números en Cargo del Responsable
+        const responsableCargo = document.getElementById('responsableCargo');
+        if (responsableCargo) {
+            responsableCargo.addEventListener('input', function () {
+                this.value = this.value.replace(/[0-9]/g, '');
+            });
+        }
     </script>
 </body>
 </html>
