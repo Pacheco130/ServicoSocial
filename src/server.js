@@ -222,17 +222,16 @@ app.post('/generate-pdf', upload.none(), async (req, res) => {
         const textWidth = font.widthOfTextAtSize(reporteNo, fontSize);
         const centerX = (width - textWidth) / 2;
         const newX = centerX - 10;
-        firstPage.drawText(`${reporteNo}`, { x: 267, y: height - 100, size: fontSize, font: font });
-        firstPage.drawText(`${periodoInicioFmt}`, { x: 107, y: height - 117, size: 10 });
-        firstPage.drawText(`${periodoFinFmt}`, { x: 247, y: height - 117, size: 10 });
+        firstPage.drawText(`${reporteNo}`, { x: 265, y: height - 97, size: fontSize, font: font });
+        firstPage.drawText(`${periodoInicioFmt}`, { x: 107, y: height - 114, size: 10 });
+        firstPage.drawText(`${periodoFinFmt}`, { x: 247, y: height - 114, size: 10 });
         firstPage.drawText(`${registro}`, { x: 500, y: height - 115, size: 10 });
-        firstPage.drawText(`${nombre}`, { x: 135, y: height - 134, size: 10 });
-        firstPage.drawText(`${boleta}`, { x: 466, y: height - 134, size: 10 });
-        firstPage.drawText(`${unidadAcademica}`, { x: 122, y: height - 151, size: 10 });
-        firstPage.drawText(`${carrera}`, { x: 405, y: height - 151, size: 10 });
-        const signatureAnchorX = 220;
-        drawCenteredAtAnchor(firstPage, `${responsableNombre}`, font, 10, signatureAnchorX, height - 725, { color: rgb(0,0,0) });
-        drawCenteredAtAnchor(firstPage, `${responsableCargo}`, font, 10, signatureAnchorX, height - 740, { color: rgb(0,0,0) });
+        firstPage.drawText(`${nombre}`, { x: 139, y: height - 131, size: 10 });
+        firstPage.drawText(`${boleta}`, { x: 468, y: height - 131, size: 10 });
+        firstPage.drawText(`${carrera}`, { x: 139, y: height - 149, size: 10 });
+        const signatureAnchorX = 225;
+        drawCenteredAtAnchor(firstPage, `${responsableNombre}`, font, 10, signatureAnchorX, height - 705, { color: rgb(0,0,0) });
+        drawCenteredAtAnchor(firstPage, `${responsableCargo}`, font, 10, signatureAnchorX, height - 715, { color: rgb(0,0,0) });
         // Se eliminó la generación automática de fechas consecutivas y del total de horas; la tabla queda para captura manual.
         const finalDoc = await stripPdfForms(pdfDoc);
         const pdfBytes = await finalDoc.save();
@@ -311,6 +310,10 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     const timesFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/Times-New-Roman.ttf'));
     const timesFont = await pdfDoc.embedFont(timesFontBytes);
 
+    // Aptos para el número de reporte (usa aptos-bold.ttf existente en fonts)
+    const aptosFontBytes = fs.readFileSync(path.join(__dirname, '../fonts/aptos-bold.ttf'));
+    const aptosFont = await pdfDoc.embedFont(aptosFontBytes);
+
     // NUEVO: función para mostrar fechas completas en español (misma lógica que reporte global)
     function fechaCompleta(fechaISO) {
         const meses = [
@@ -320,41 +323,35 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         if (!fechaISO) return '';
         const [anio, mes, dia] = fechaISO.split('-');
         if (!anio || !mes || !dia) return fechaISO;
-        return `${parseInt(dia)} de ${meses[parseInt(mes) - 1]} de ${anio}`;
+        return `${parseInt(dia)}-${meses[parseInt(mes) - 1]}-${anio}`;
     }
 
     const page = pdfDoc.getPages()[0];
 
-    // Encabezado superior
-    page.drawText('CECyT N° 19 “Leona Vicario”', {
-        x: 227,
-        y: 744,
-        size: 12,
-    });
-
-    // N. Reporte
+    // N. Reporte (usando fuente Aptos)
     page.drawText(`${req.body.nreporte}`, {
-        x: 390,
-        y: 680,
+        x: 462,
+        y: 692,
         size: 16,
+        font: aptosFont,
     });
 
     const fechaInicioTexto = fechaCompleta(cleanBody.fechaInicio);
     const fechaFinTexto = fechaCompleta(cleanBody.fechaFin);
-    page.drawText(`${fechaInicioTexto} al ${fechaFinTexto}`, {
-        x: 250,
-        y: 648.5,
+    page.drawText(`${fechaInicioTexto}        ${fechaFinTexto}`, {
+        x: 315,
+        y: 664,
         size: 13,
     });
 
     page.drawText(`${req.body.nombreA}`, {
-        x: 108,
-        y: 595.5,
+        x: 118,
+        y: 618,
         size: 10,
     });
     page.drawText(`${req.body.boleta}`, { 
-        x: 98, 
-        y: 575, 
+        x: 118, 
+        y: 580, 
         size: 10, 
     });
     page.drawText(`${req.body.semestre}`, { 
@@ -363,8 +360,8 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         size: 10,  
     });
     page.drawText(`${req.body.telefono}`, { 
-        x: 156, 
-        y: 533,
+        x: 166, 
+        y: 560,
         size: 10, 
     });
 
