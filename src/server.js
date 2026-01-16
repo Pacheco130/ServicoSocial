@@ -367,14 +367,14 @@ app.post('/generate-reporte-mensual', async (req, res) => {
 
     // Ajustar prestatario a las mismas coords del reporte global
     page.drawText(`${req.body.prestatario}`, { 
-        x: 122, 
-        y: 512,
+        x: 130, 
+        y: 546,
         size: 10,
     });
 
     page.drawText(`${req.body.carrera}`, { 
-        x: 382, 
-        y: 575, 
+        x: 182, 
+        y: 620, 
         size: 10, 
     });
     page.drawText(`${req.body.nregistro}`, {
