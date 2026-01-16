@@ -338,8 +338,17 @@ app.post('/generate-reporte-mensual', async (req, res) => {
 
     const fechaInicioTexto = fechaCompleta(cleanBody.fechaInicio);
     const fechaFinTexto = fechaCompleta(cleanBody.fechaFin);
-    page.drawText(`${fechaInicioTexto}        ${fechaFinTexto}`, {
+
+    // Fecha de inicio
+    page.drawText(`${fechaInicioTexto}`, {
         x: 315,
+        y: 664,
+        size: 13,
+    });
+
+    // Fecha de fin (ajusta la coord. X según tu plantilla)
+    page.drawText(`${fechaFinTexto}`, {
+        x: 450,
         y: 664,
         size: 13,
     });
@@ -354,11 +363,14 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         y: 580, 
         size: 10, 
     });
-    page.drawText(`${req.body.semestre}`, { 
-        x: 113, 
-        y: 554,
+
+//Porcentaje de Créditos
+    page.drawText(`${req.body.porcentajeCreditos}`, { 
+        x: 348, 
+        y: 580,
         size: 10,  
     });
+
     page.drawText(`${req.body.telefono}`, { 
         x: 166, 
         y: 560,
@@ -367,24 +379,32 @@ app.post('/generate-reporte-mensual', async (req, res) => {
 
     // Ajustar prestatario a las mismas coords del reporte global
     page.drawText(`${req.body.prestatario}`, { 
-        x: 130, 
-        y: 546,
+        x: 129, 
+        y: 541,
         size: 10,
     });
 
     page.drawText(`${req.body.carrera}`, { 
         x: 182, 
-        y: 620, 
+        y: 598, 
         size: 10, 
     });
+
+    // Nuevo: imprimir Programa (ajusta coordenadas si lo requiere tu plantilla)
+    page.drawText(`${req.body.programa}`, {
+        x: 129,
+        y: 523, // por ejemplo, cerca de prestatario/carrera
+        size: 10,
+    });
+
     page.drawText(`${req.body.nregistro}`, {
-        x: 354,
-        y: 554.3,
+        x: 478,
+        y: 580,
         size: 10,
     });
     page.drawText(`${req.body.correo}`, { 
-        x: 369,
-        y: 534,
+        x: 338,
+        y: 560,
         size: 10,
     });
 
@@ -438,7 +458,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
     }
 
     const lineasResumen = dividirTexto(resumenActividades, 80);
-    let yResumen = 460; // Zona donde antes iban las actividades
+    let yResumen = 480; // Zona donde antes iban las actividades
     const saltoLinea = 18;
     const anchoMaximoTexto = 440;
 
@@ -451,7 +471,7 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         }
 
         page.drawText(textoDibujar, {
-            x: 54,
+            x: 60,
             y: yResumen,
             size: 12,
             font: timesFont
@@ -461,11 +481,11 @@ app.post('/generate-reporte-mensual', async (req, res) => {
  
     // Firmas: misma lógica y coordenadas que reporte global
     const monthlySignatureAnchorX = 315;
-    drawCenteredAtAnchor(page, `${cleanBody.encargadoDirecto}`, montserratLight, 10, monthlySignatureAnchorX, 70, { color: rgb(0.56, 0.56, 0.56) });
-    drawCenteredAtAnchor(page, `${cleanBody.cargo}`,            montserratLight, 10, monthlySignatureAnchorX, 60, { color: rgb(0.56, 0.56, 0.56) });
+    drawCenteredAtAnchor(page, `${cleanBody.encargadoDirecto}`, montserratLight, 10, monthlySignatureAnchorX, 100, { color: rgb(0.56, 0.56, 0.56) });
+    drawCenteredAtAnchor(page, `${cleanBody.cargo}`,            montserratLight, 10, monthlySignatureAnchorX, 90, { color: rgb(0.56, 0.56, 0.56) });
     page.drawText(`${cleanBody.nombreA}`, {
-        x: 70,
-        y: 70,
+        x: 60,
+        y: 100,
         size: 10,
         font: montserratLight,
         color: rgb(0.56, 0.56, 0.56)

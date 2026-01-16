@@ -10,6 +10,7 @@
             const fase2 = document.getElementById('fase2');
             const siguienteBtn = document.getElementById('siguienteBtn');
             const nregistro = document.getElementById('nregistro');
+            const porcentajeCreditos = document.getElementById('porcentajeCreditos');
 
             fase2.style.display = 'none';
             siguienteBtn.addEventListener('click', function (e) {
@@ -21,6 +22,11 @@
             // Restringir a solo números, / y -
             nregistro.addEventListener('input', function () {
                 this.value = this.value.replace(/[^\d\/-]/g, '');
+            });
+
+            // Restringir Porcentaje de Créditos a solo números y "."
+            porcentajeCreditos.addEventListener('input', function () {
+                this.value = this.value.replace(/[^0-9.]/g, '');
             });
         });
     </script>
@@ -139,13 +145,22 @@
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="semestre">Semestre:</label>
-                            <select id="semestre" name="semestre" required>
-                                <option value="">Seleccione...</option>
-                                <option value="4">4</option>
-                                <option value="5">5</option>
-                                <option value="6">6</option>
-                            </select>
+                            <label for="programa">Programa:</label>
+                            <input
+                                type="text"
+                                id="programa"
+                                name="programa"
+                                required>
+                        </div>
+                        <div class="form-group">
+                            <label for="porcentajeCreditos">Porcentaje de Crédititos:</label>
+                            <input
+                                type="text"
+                                id="porcentajeCreditos"
+                                name="porcentajeCreditos"
+                                required
+                                pattern="^[0-9]*\.?[0-9]*$"
+                                title="Solo números y punto decimal, por ejemplo 75 o 75.5">
                         </div>
                         <div class="form-group">
                             <label for="fechaInicio">Fecha de inicio del reporte:</label>
