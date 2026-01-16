@@ -391,8 +391,8 @@ app.post('/generate-reporte-mensual', async (req, res) => {
         size: 10,
     });
 
-    // Nuevo: usar un solo resumen de actividades, similar al reporte global
-    const resumenActividades = (cleanBody.resumenActividades || '').slice(0, 1000);
+    // Nuevo: usar un solo resumen de actividades, similar al reporte global (máx. 810 caracteres)
+    const resumenActividades = (cleanBody.resumenActividades || '').slice(0, 810);
 
     function dividirTexto(texto, maxLen) {
         const palabras = texto.trim().split(/\s+/);
@@ -566,10 +566,29 @@ app.post('/generate-reporte-global', async (req, res) => {
         drawCenteredAtAnchor(page, `${cleanBody.responsable}`, montserratLight, 10, globalSignatureAnchorX, 70, { color: rgb(0.56, 0.56, 0.56) });
         drawCenteredAtAnchor(page, `${cleanBody.cargoResponsable}`, montserratLight, 10, globalSignatureAnchorX, 60, { color: rgb(0.56, 0.56, 0.56) });
         page.drawText(`${cleanBody.prestatario}`, { x: 125, y: 510.5, size: 11});
-        page.drawText(`${cleanBody.programa}`, { x: 185, y: 489.5, size: 11 });
+        // Ajustar dinámicamente el tamaño de fuente del nombre del programa
+        const textoPrograma = `${cleanBody.programa || ''}`;
+        let tamPrograma = 11; // tamaño base
+        const anchoMaxPrograma = 340; // ancho máximo aproximado hasta donde está el "19"
 
-        // imprimir resumen de actividades (máx. 1000 caracteres)
-        const resumenActividades = (cleanBody.resumenActividades || '').slice(0, 1000); // CAMBIO: antes 600
+        if (textoPrograma) {
+            let anchoTexto = timesFont.widthOfTextAtSize(textoPrograma, tamPrograma);
+
+            // Si se pasa del ancho máximo, escalar el tamaño de fuente
+            if (anchoTexto > anchoMaxPrograma) {
+                const factorEscala = anchoMaxPrograma / anchoTexto;
+                tamPrograma = Math.max(8, Math.floor(tamPrograma * factorEscala));
+            }
+
+            page.drawText(textoPrograma, {
+                x: 185,
+                y: 489.5,
+                size: tamPrograma,
+            });
+        }
+
+        // imprimir resumen de actividades (máx. 810 caracteres)
+        const resumenActividades = (cleanBody.resumenActividades || '').slice(0, 810); // CAMBIO: antes 600
 
         function dividirTexto(texto, maxLen) {
             const palabras = texto.trim().split(/\s+/);

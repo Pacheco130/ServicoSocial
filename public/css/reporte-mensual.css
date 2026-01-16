@@ -85,6 +85,55 @@ button:hover {
     box-shadow: 0 2px 16px #74284422;
     padding: 32px 24px;
 }
+/* Notificación emergente estilo sistema */
+.toast {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%) scale(0.96);
+    min-width: 380px;
+    max-width: 640px;
+    background: #ffffff;
+    color: #111827;
+    padding: 20px 22px;
+    border-radius: 16px;
+    box-shadow: 0 18px 45px rgba(15,23,42,0.35);
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    font-size: 1rem;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    border: 2px solid #74284444;
+    transition: opacity 0.25s ease-out, transform 0.25s ease-out;
+}
+.toast.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translate(-50%, -50%) scale(1);
+}
+.toast-logo {
+    width: 70px;
+    height: auto;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 8px #74284444);
+}
+.toast-message {
+    flex: 1;
+    line-height: 1.4;
+}
+.toast-close {
+    background: transparent;
+    border: none;
+    color: #6b7280;
+    cursor: pointer;
+    padding: 0 4px;
+    font-size: 0.9rem;
+}
+.toast-close:hover {
+    color: #111827;
+}
 .actividades-group {
     display: grid;
     grid-template-columns: 1fr 1fr;

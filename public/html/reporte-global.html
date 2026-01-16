@@ -124,7 +124,7 @@
                         <input type="email" id="correo" name="correo" required>
                     </div>
                     <div class="form-group">
-                        <label for="responsable">Responsable:</label>
+                        <label for="responsable">Nombre del Responsable:</label>
                         <input type="text" id="responsable" name="responsable" required>
                     </div>
                     <div class="form-group">
@@ -149,10 +149,10 @@
                 </label>
                 <textarea id="resumenActividades"
                           name="resumenActividades"
-                          maxlength="1000"
+                          maxlength="810"
                           rows="4"
                           required></textarea>
-                <small id="resumenContador">0 / 1000</small> <!-- CAMBIO: antes 0 / 600 -->
+                <small id="resumenContador">0 / 810</small> <!-- CAMBIO: antes 0 / 600 -->
             </div>
 
             <div class="g-recaptcha" data-sitekey="6LelANkrAAAAAA7ax4KwALZYYBQ1h2LNkFqDkpIo"></div>
@@ -176,7 +176,7 @@
         const resumenTextarea = document.getElementById('resumenActividades');
         const resumenContador = document.getElementById('resumenContador');
 
-        const maxResumen = parseInt(resumenTextarea.maxLength, 10) || 1000; // CAMBIO: antes 600
+        const maxResumen = parseInt(resumenTextarea.maxLength, 10) || 810; // CAMBIO: antes 600
 
         // Todos los campos required excepto el propio resumen
         const requiredFields = Array.from(
@@ -212,7 +212,7 @@
     // NUEVO: restricciones de entrada
     (function () {
         // No permitir números en varios campos de texto
-        const soloLetrasIds = ['nombreCompleto', 'responsable', 'programa', 'cargoResponsable'];
+        const soloLetrasIds = ['nombreCompleto', 'responsable', 'cargoResponsable'];
         soloLetrasIds.forEach(id => {
             const el = document.getElementById(id);
             if (!el) return;
